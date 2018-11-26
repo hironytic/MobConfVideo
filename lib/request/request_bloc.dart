@@ -80,6 +80,8 @@ class DefaultRequestBloc implements RequestBloc {
   Observable<RequestTarget> _currentTarget;
   Observable<List<RequestItem>> _requestItems;
 
+  List<StreamSubscription<dynamic>> _subscriptions = new List();
+
   List<RequestTarget> get availableTargets {
     return [
       RequestTarget(
@@ -105,11 +107,16 @@ class DefaultRequestBloc implements RequestBloc {
     ];
   }
 
+  Observable<T> _replayAutoConnect<T>(Observable<T> source) {
+    return source.publishReplay(maxSize: 1).autoConnect(
+        connection: (subscription) => _subscriptions.add(subscription));
+  }
+
   DefaultRequestBloc() {
     final targetSelectionWithDefault =
-        _targetSelection.startWith("id3").shareReplay(maxSize: 1);
+        _targetSelection.startWith("id3").distinct().shareReplay(maxSize: 1);
 
-    _currentTarget = targetSelectionWithDefault.map((id) {
+    _currentTarget = _replayAutoConnect(targetSelectionWithDefault.map((id) {
       switch (id) {
         case "id0":
           return RequestTarget(
@@ -142,9 +149,10 @@ class DefaultRequestBloc implements RequestBloc {
         default:
           return null;
       }
-    }).shareReplay(maxSize: 1);
+    }));
 
-    _requestItems = targetSelectionWithDefault.switchMap((id) {
+    _requestItems =
+        _replayAutoConnect(targetSelectionWithDefault.switchMap((id) {
       switch (id) {
         case "id0":
           return Observable.just(<RequestItem>[
@@ -211,10 +219,12 @@ class DefaultRequestBloc implements RequestBloc {
         default:
           return Observable<List<RequestItem>>.just(<RequestItem>[]);
       }
-    }).shareReplay(maxSize: 1);
+    }));
   }
 
   void dispose() {
+    _subscriptions.forEach((subscription) => subscription.cancel());
+    _subscriptions.clear();
     _targetSelection.close();
   }
 }
