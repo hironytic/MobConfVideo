@@ -63,9 +63,7 @@ abstract class RequestBloc {
 
   // outputs
   Stream<RequestTarget> get currentTarget;
-
   List<RequestTarget> get availableTargets;
-
   Stream<List<RequestItem>> get requestItems;
 }
 
@@ -73,7 +71,6 @@ class DefaultRequestBloc implements RequestBloc {
   Sink<String> get targetSelection => _targetSelection.sink;
 
   Stream<RequestTarget> get currentTarget => _currentTarget;
-
   Stream<List<RequestItem>> get requestItems => _requestItems;
 
   final PublishSubject<String> _targetSelection = PublishSubject();
