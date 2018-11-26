@@ -23,6 +23,8 @@
 // THE SOFTWARE.
 //
 
+import 'dart:async';
+
 import 'package:flutter/widgets.dart';
 import 'package:rxdart/rxdart.dart';
 
@@ -57,6 +59,7 @@ class RequestItem {
 
 abstract class RequestBloc {
   // inputs
+  Sink<String> get targetSelection;
 
   // outputs
   Stream<RequestTarget> get currentTarget;
@@ -67,10 +70,13 @@ abstract class RequestBloc {
 }
 
 class DefaultRequestBloc implements RequestBloc {
+  Sink<String> get targetSelection => _targetSelection.sink;
+
   Stream<RequestTarget> get currentTarget => _currentTarget;
 
   Stream<List<RequestItem>> get requestItems => _requestItems;
 
+  final PublishSubject<String> _targetSelection = PublishSubject();
   Observable<RequestTarget> _currentTarget;
   Observable<List<RequestItem>> _requestItems;
 
@@ -100,38 +106,116 @@ class DefaultRequestBloc implements RequestBloc {
   }
 
   DefaultRequestBloc() {
-    _currentTarget = Observable<RequestTarget>.merge([
-      Observable.just(RequestTarget(
-        id: "id0",
-        name: "第0回 カンファレンス動画鑑賞会",
-        isAccepting: false,
-      )),
-      Observable.never(),
-    ]).shareReplay(maxSize: 1);
+    final targetSelectionWithDefault =
+        _targetSelection.startWith("id3").shareReplay(maxSize: 1);
 
-    _requestItems = Observable<List<RequestItem>>.merge([
-      Observable.just(<RequestItem>[
-        RequestItem(
-          id: "aaa",
-          title: "スマホアプリエンジニアだから知ってほしいブロックチェーンと分散型アプリケーション",
-          conference: "iOSDC Japan 2018",
-          isWatched: true,
-        ),
-        RequestItem(
-          id: "bbb",
-          title: "DDD(ドメイン駆動設計)を知っていますか？？",
-          conference: "iOSDC 2018 Reject Conference",
-          isWatched: true,
-        ),
-        RequestItem(
-          id: "ccc",
-          title: "再利用可能なUI Componentsを利用したアプリ開発",
-          conference: "iOSDC Japan 2018",
-          isWatched: false,
-        ),
-      ]),
-      Observable.never(),
-    ]).shareReplay(maxSize: 1);
+    _currentTarget = targetSelectionWithDefault.map((id) {
+      switch (id) {
+        case "id0":
+          return RequestTarget(
+            id: "id0",
+            name: "第0回 カンファレンス動画鑑賞会",
+            isAccepting: false,
+          );
+
+        case "id1":
+          return RequestTarget(
+            id: "id1",
+            name: "第1回 カンファレンス動画鑑賞会",
+            isAccepting: false,
+          );
+
+        case "id2":
+          return RequestTarget(
+            id: "id2",
+            name: "第2回 カンファレンス動画鑑賞会",
+            isAccepting: false,
+          );
+
+        case "id3":
+          return RequestTarget(
+            id: "id3",
+            name: "第3回 カンファレンス動画鑑賞会",
+            isAccepting: true,
+          );
+
+        default:
+          return null;
+      }
+    }).shareReplay(maxSize: 1);
+
+    _requestItems = targetSelectionWithDefault.switchMap((id) {
+      switch (id) {
+        case "id0":
+          return Observable.just(<RequestItem>[
+            RequestItem(
+              id: "aaa",
+              title: "スマホアプリエンジニアだから知ってほしいブロックチェーンと分散型アプリケーション",
+              conference: "iOSDC Japan 2018",
+              isWatched: true,
+            ),
+            RequestItem(
+              id: "bbb",
+              title: "DDD(ドメイン駆動設計)を知っていますか？？",
+              conference: "iOSDC 2018 Reject Conference",
+              isWatched: true,
+            ),
+            RequestItem(
+              id: "ccc",
+              title: "再利用可能なUI Componentsを利用したアプリ開発",
+              conference: "iOSDC Japan 2018",
+              isWatched: false,
+            ),
+          ]);
+
+        case "id1":
+          return Observable.just(<RequestItem>[
+            RequestItem(
+              id: "aaa",
+              title: "50 分でわかるテスト駆動開発",
+              conference: "de:code 2017",
+              isWatched: true,
+            ),
+            RequestItem(
+              id: "bbb",
+              title: "テストライブコーディング",
+              conference: "iOSDC 2018 Reject Conference",
+              isWatched: true,
+            ),
+            RequestItem(
+              id: "ccc",
+              title: "テストライブコーディング",
+              conference: "iOSDC 2018 Reject Conference",
+              isWatched: true,
+            ),
+            RequestItem(
+              id: "ccc",
+              title: "Kotlin コルーチンを理解しよう",
+              conference: "Kotlin Fest 2018",
+              isWatched: true,
+            ),
+            RequestItem(
+              id: "ccc",
+              title: "Kioskアプリと端末の作り方",
+              conference: "DroidKaigi 2018",
+              isWatched: true,
+            ),
+            RequestItem(
+              id: "ccc",
+              title: "アプリをエミュレートするアプリの登場とその危険性",
+              conference: "DroidKaigi 2018",
+              isWatched: true,
+            ),
+          ]);
+
+        default:
+          return Observable<List<RequestItem>>.just(<RequestItem>[]);
+      }
+    }).shareReplay(maxSize: 1);
+  }
+
+  void dispose() {
+    _targetSelection.close();
   }
 }
 

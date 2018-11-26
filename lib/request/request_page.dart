@@ -38,6 +38,7 @@ class RequestPage extends StatelessWidget {
       appBar: AppBar(
         title: PopupMenuButton(
           itemBuilder: _buildPopupMenuItems,
+          onSelected: (value) => requestBloc.targetSelection.add(value),
           child: StreamBuilder<RequestTarget>(
             stream: requestBloc.currentTarget,
             builder: (context, snapshot) =>
