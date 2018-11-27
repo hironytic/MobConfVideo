@@ -35,6 +35,13 @@ class RequestPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final RequestBloc requestBloc = BlocProvider.of(context);
+    Color downArrowColor;
+    if (Theme.of(context).primaryColorBrightness == Brightness.light) {
+      downArrowColor = Colors.grey.shade700;
+    } else {
+      downArrowColor = Colors.white70;
+    }
+
     return Scaffold(
       appBar: AppBar(
         title: PopupMenuButton(
@@ -42,8 +49,20 @@ class RequestPage extends StatelessWidget {
           onSelected: (value) => requestBloc.targetSelection.add(value),
           child: StreamBuilder<RequestTarget>(
             stream: requestBloc.currentTarget,
-            builder: (context, snapshot) =>
-                Text((snapshot.data?.name ?? "") + " \u25be"),
+            builder: (context, snapshot) {
+              return Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                mainAxisSize: MainAxisSize.min,
+                children: <Widget>[
+                  Text((snapshot.data?.name ?? "")),
+                  Icon(Icons.arrow_drop_down,
+                    size: 24.0,
+                    color: downArrowColor,
+                  ),
+
+                ],
+              );
+            }
           ),
         ),
       ),
