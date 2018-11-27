@@ -25,7 +25,7 @@
 
 import 'dart:async';
 
-import 'package:flutter/widgets.dart';
+import 'package:mob_conf_video/BlocProvider.dart';
 import 'package:rxdart/rxdart.dart';
 
 class RequestTarget {
@@ -57,7 +57,7 @@ class RequestItem {
   final bool isWatched;
 }
 
-abstract class RequestBloc {
+abstract class RequestBloc implements Bloc {
   // inputs
   Sink<String> get targetSelection;
 
@@ -223,25 +223,5 @@ class DefaultRequestBloc implements RequestBloc {
     _subscriptions.forEach((subscription) => subscription.cancel());
     _subscriptions.clear();
     _targetSelection.close();
-  }
-}
-
-class RequestProvider extends InheritedWidget {
-  final RequestBloc requestBloc;
-
-  RequestProvider({
-    Key key,
-    RequestBloc requestBloc,
-    Widget child,
-  })  : requestBloc = requestBloc,
-        super(key: key, child: child);
-
-  @override
-  bool updateShouldNotify(InheritedWidget oldWidget) => true;
-
-  static RequestBloc of(BuildContext context) {
-    return (context.inheritFromWidgetOfExactType(RequestProvider)
-            as RequestProvider)
-        .requestBloc;
   }
 }

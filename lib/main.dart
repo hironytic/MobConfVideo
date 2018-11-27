@@ -24,30 +24,23 @@
 //
 
 import 'package:flutter/material.dart';
+import 'package:mob_conf_video/BlocProvider.dart';
 import 'package:mob_conf_video/favorite/favorite_page.dart';
 import 'package:mob_conf_video/request/request_bloc.dart';
 import 'package:mob_conf_video/request/request_page.dart';
 import 'package:mob_conf_video/video/video_page.dart';
 
 void main() {
-  final requestBloc = DefaultRequestBloc();
-
-  runApp(MyApp(
-    requestBloc: requestBloc,
-  ));
+  runApp(MyApp());
 }
 
 class MyApp extends StatelessWidget {
   // This widget is the root of your application.
 
-  final RequestBloc requestBloc;
-
-  MyApp({this.requestBloc});
-
   @override
   Widget build(BuildContext context) {
-    return RequestProvider(
-      requestBloc: requestBloc,
+    return BlocProvider<RequestBloc>(
+      createBloc: () => DefaultRequestBloc(),
       child: MaterialApp(
         title: 'MobConfVideo',
         theme: ThemeData(

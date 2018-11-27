@@ -24,6 +24,7 @@
 //
 
 import 'package:flutter/material.dart';
+import 'package:mob_conf_video/BlocProvider.dart';
 import 'package:mob_conf_video/request/request_bloc.dart';
 
 class RequestPage extends StatelessWidget {
@@ -33,7 +34,7 @@ class RequestPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final requestBloc = RequestProvider.of(context);
+    final RequestBloc requestBloc = BlocProvider.of(context);
     return Scaffold(
       appBar: AppBar(
         title: PopupMenuButton(
@@ -52,7 +53,7 @@ class RequestPage extends StatelessWidget {
   }
 
   List<PopupMenuEntry<String>> _buildPopupMenuItems(BuildContext context) {
-    final requestBloc = RequestProvider.of(context);
+    final RequestBloc requestBloc = BlocProvider.of(context);
     return requestBloc.availableTargets
         .map((target) =>
             PopupMenuItem(value: target.id, child: Text(target.name)))
@@ -60,7 +61,7 @@ class RequestPage extends StatelessWidget {
   }
 
   Widget _buildBody(BuildContext context) {
-    final requestBloc = RequestProvider.of(context);
+    final RequestBloc requestBloc = BlocProvider.of(context);
     return StreamBuilder<List<RequestItem>>(
       stream: requestBloc.requestItems,
       builder: (buildContext, snapshot) {
