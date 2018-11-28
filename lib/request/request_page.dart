@@ -90,15 +90,19 @@ class RequestPage extends StatelessWidget {
         } else if (snapshot.data.isEmpty) {
           return Center(child: Text("リクエストがありません"));
         } else {
-          return ListView(
-            children: ListTile.divideTiles(
-                context: context,
-                tiles: snapshot.data.map((item) => ListTile(
-                      key: ObjectKey(item.id),
-                      title: Text(item.title),
-                      subtitle: Text(item.conference),
-                      trailing: item.isWatched ? Icon(Icons.check) : null,
-                    ))).toList(),
+          final items = snapshot.data;
+          return ListView.separated(
+            itemCount: items.length,
+            separatorBuilder: (context, index) => Divider(),
+            itemBuilder: (context, index) {
+              final item = items[index];
+              return ListTile(
+                key: ObjectKey(item.id),
+                title: Text(item.title),
+                subtitle: Text(item.conference),
+                trailing: item.isWatched ? Icon(Icons.check) : null,
+              );
+            },
           );
         }
       },
