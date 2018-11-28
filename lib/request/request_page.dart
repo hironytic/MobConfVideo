@@ -34,6 +34,14 @@ class RequestPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: _buildAppBar(context),
+      body: _buildBody(context),
+      bottomNavigationBar: bottomNavigationBar,
+    );
+  }
+
+  Widget _buildAppBar(BuildContext context) {
     final RequestBloc requestBloc = BlocProvider.of(context);
     Color downArrowColor;
     if (Theme.of(context).primaryColorBrightness == Brightness.light) {
@@ -42,12 +50,16 @@ class RequestPage extends StatelessWidget {
       downArrowColor = Colors.white70;
     }
 
-    return Scaffold(
-      appBar: AppBar(
-        title: PopupMenuButton(
-          itemBuilder: _buildPopupMenuItems,
-          onSelected: (value) => requestBloc.targetSelection.add(value),
-          child: StreamBuilder<RequestTarget>(
+    return AppBar(
+      title: PopupMenuButton(
+        itemBuilder: (context) {
+          return requestBloc.availableTargets
+              .map((target) =>
+              PopupMenuItem(value: target.id, child: Text(target.name)))
+              .toList();
+        },
+        onSelected: (value) => requestBloc.targetSelection.add(value),
+        child: StreamBuilder<RequestTarget>(
             stream: requestBloc.currentTarget,
             builder: (context, snapshot) {
               return Row(
@@ -63,20 +75,9 @@ class RequestPage extends StatelessWidget {
                 ],
               );
             }
-          ),
         ),
       ),
-      body: _buildBody(context),
-      bottomNavigationBar: bottomNavigationBar,
     );
-  }
-
-  List<PopupMenuEntry<String>> _buildPopupMenuItems(BuildContext context) {
-    final RequestBloc requestBloc = BlocProvider.of(context);
-    return requestBloc.availableTargets
-        .map((target) =>
-            PopupMenuItem(value: target.id, child: Text(target.name)))
-        .toList();
   }
 
   Widget _buildBody(BuildContext context) {
