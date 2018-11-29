@@ -23,8 +23,8 @@
 // THE SOFTWARE.
 //
 
+import 'package:bloc_provider/bloc_provider.dart';
 import 'package:meta/meta.dart';
-import 'package:mob_conf_video/common/bloc_provider.dart';
 import 'package:mob_conf_video/common/hot_observables_holder.dart';
 import 'package:rxdart/rxdart.dart';
 
