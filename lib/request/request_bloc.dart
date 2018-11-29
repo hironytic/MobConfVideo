@@ -25,7 +25,8 @@
 
 import 'dart:async';
 
-import 'package:mob_conf_video/BlocProvider.dart';
+import 'package:mob_conf_video/common/bloc_provider.dart';
+import 'package:mob_conf_video/common/hot_observables_holder.dart';
 import 'package:rxdart/rxdart.dart';
 
 class RequestTarget {
@@ -73,11 +74,10 @@ class DefaultRequestBloc implements RequestBloc {
   Stream<RequestTarget> get currentTarget => _currentTarget;
   Stream<List<RequestItem>> get requestItems => _requestItems;
 
-  final PublishSubject<String> _targetSelection = PublishSubject();
+  final _hotObservablesHolder = new HotObservablesHolder();
+  final _targetSelection = PublishSubject<String>();
   Observable<RequestTarget> _currentTarget;
   Observable<List<RequestItem>> _requestItems;
-
-  List<StreamSubscription<dynamic>> _subscriptions = new List();
 
   List<RequestTarget> get availableTargets {
     return [
@@ -104,16 +104,12 @@ class DefaultRequestBloc implements RequestBloc {
     ];
   }
 
-  Observable<T> _replayAutoConnect<T>(Observable<T> source) {
-    return source.publishReplay(maxSize: 1).autoConnect(
-        connection: (subscription) => _subscriptions.add(subscription));
-  }
-
   DefaultRequestBloc() {
     final targetSelectionWithDefault =
         _targetSelection.startWith("id3").distinct().shareReplay(maxSize: 1);
 
-    _currentTarget = _replayAutoConnect(targetSelectionWithDefault.map((id) {
+    _currentTarget = _hotObservablesHolder
+        .replayConnect(targetSelectionWithDefault.map((id) {
       switch (id) {
         case "id0":
           return RequestTarget(
@@ -148,8 +144,8 @@ class DefaultRequestBloc implements RequestBloc {
       }
     }));
 
-    _requestItems =
-        _replayAutoConnect(targetSelectionWithDefault.switchMap((id) {
+    _requestItems = _hotObservablesHolder
+        .replayConnect(targetSelectionWithDefault.switchMap((id) {
       switch (id) {
         case "id0":
           return Observable.just(<RequestItem>[
@@ -220,8 +216,7 @@ class DefaultRequestBloc implements RequestBloc {
   }
 
   void dispose() {
-    _subscriptions.forEach((subscription) => subscription.cancel());
-    _subscriptions.clear();
+    _hotObservablesHolder.dispose();
     _targetSelection.close();
   }
 }

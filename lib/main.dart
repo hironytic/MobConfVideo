@@ -24,10 +24,11 @@
 //
 
 import 'package:flutter/material.dart';
-import 'package:mob_conf_video/BlocProvider.dart';
+import 'package:mob_conf_video/common/bloc_provider.dart';
 import 'package:mob_conf_video/favorite/favorite_page.dart';
 import 'package:mob_conf_video/request/request_bloc.dart';
 import 'package:mob_conf_video/request/request_page.dart';
+import 'package:mob_conf_video/video/video_bloc.dart';
 import 'package:mob_conf_video/video/video_page.dart';
 
 void main() {
@@ -41,12 +42,15 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return BlocProvider<RequestBloc>(
       createBloc: () => DefaultRequestBloc(),
-      child: MaterialApp(
-        title: 'MobConfVideo',
-        theme: ThemeData(
-          primarySwatch: Colors.blue,
+      child: BlocProvider<VideoBloc>(
+        createBloc: () => DefaultVideoBloc(),
+        child: MaterialApp(
+          title: 'MobConfVideo',
+          theme: ThemeData(
+            primarySwatch: Colors.blue,
+          ),
+          home: MyHomePage(),
         ),
-        home: MyHomePage(),
       ),
     );
   }

@@ -24,6 +24,8 @@
 //
 
 import 'package:flutter/material.dart';
+import 'package:mob_conf_video/common/bloc_provider.dart';
+import 'package:mob_conf_video/video/video_bloc.dart';
 
 class VideoPage extends StatefulWidget {
   VideoPage({Key key, this.bottomNavigationBar}) : super(key: key);
@@ -55,19 +57,31 @@ class _VideoPageState extends State<VideoPage> {
   }
 
   Widget _buildBody(BuildContext context) {
-    return ListView.builder(
-      itemCount: 10 + 1,
-      itemBuilder: (context, index) {
-        if (index == 0) {
-          return _buildFilterPanel(context);
-        } else {
-          return _buildSession(context, index - 1);
+    final VideoBloc videoBloc = BlocProvider.of(context);
+
+    return StreamBuilder(
+      stream: videoBloc.sessions,
+      builder: (context, snapshot) {
+        if (snapshot.data == null) {
+          return Container();
         }
+
+        List<Session> sessions = snapshot.data;
+        return ListView.builder(
+          itemCount: sessions.length + 1,
+          itemBuilder: (context, index) {
+            if (index == 0) {
+              return _buildFilterPanel(context);
+            } else {
+              return _buildSession(context, sessions[index - 1], index - 1);
+            }
+          },
+        );
       },
     );
   }
 
-  Widget _buildSession(BuildContext context, int index) {
+  Widget _buildSession(BuildContext context, Session session, int index) {
     final ThemeData themeData = Theme.of(context);
     final TextTheme textTheme = themeData.textTheme;
 
@@ -80,22 +94,21 @@ class _VideoPageState extends State<VideoPage> {
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 mainAxisAlignment: MainAxisAlignment.start,
                 children: <Widget>[
-                  Text("タイトルがどうこうしてもそうするとは言えないはなし", style: textTheme.headline),
+                  Text(session.title, style: textTheme.headline),
                   DefaultTextStyle(
                     style: textTheme.body1.copyWith(color: Colors.black54),
                     softWrap: false,
                     overflow: TextOverflow.ellipsis,
                     maxLines: 3,
                     child: new Padding(
-                      child: new Text(
-                          "いっけなーい💦トークトーク🗣私、ひろん。今年もiOSDCのLTに応募したの✨でもiOSDCは競技LT🏅オーディエンスもいっぱいいるから緊張してしゃべれないよー🙀あ、そうだ💡AVSpeechSynthesizerちゃんとPDF Kitくんに頼めば、代わりに発表してくれるんじゃない？💕私あったまいいー…って本当に採択されたらどうしよう🆘次回「全部iOSにしゃべらせちゃえ！」お楽しみに"),
+                      child: new Text(session.description),
                       padding: const EdgeInsets.only(top: 12.0, bottom: 8.0),
                     ),
                   ),
                   Padding(
                     padding: const EdgeInsets.only(top: 8.0),
                     child: new Column(
-                      children: _buildSpeakers(context),
+                      children: _buildSpeakers(context, session),
                     ),
                   ),
                   Padding(
@@ -108,9 +121,9 @@ class _VideoPageState extends State<VideoPage> {
     );
   }
 
-  List<Widget> _buildSpeakers(BuildContext context) {
-    return <Widget>[
-      Container(
+  List<Widget> _buildSpeakers(BuildContext context, Session session) {
+    return session.speakers.map((speaker) {
+      return Container(
         padding: const EdgeInsets.only(top: 4.0),
         child: Row(
           children: <Widget>[
@@ -120,27 +133,12 @@ class _VideoPageState extends State<VideoPage> {
 //              child: Image(image:),
             ),
             Container(
-              child: Text("ひろん"),
+              child: Text(speaker.name),
             )
           ],
         ),
-      ),
-      Container(
-        padding: const EdgeInsets.only(top: 4.0),
-        child: Row(
-          children: <Widget>[
-            SizedBox(
-              width: 32.0,
-              height: 32.0,
-//              child: Image(image:),
-            ),
-            Container(
-              child: Text("Hogeta Fugao"),
-            )
-          ],
-        ),
-      ),
-    ];
+      );
+    }).toList();
   }
 
   Widget _buildFilterPanel(BuildContext context) {
