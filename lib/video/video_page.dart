@@ -96,7 +96,7 @@ class _VideoPageState extends State<VideoPage> {
                 children: <Widget>[
                   Text(session.title, style: textTheme.headline),
                   DefaultTextStyle(
-                    style: textTheme.body1.copyWith(color: Colors.black54),
+                    style: textTheme.body1.copyWith(color: Colors.black87),
                     softWrap: false,
                     overflow: TextOverflow.ellipsis,
                     maxLines: 3,
@@ -113,7 +113,7 @@ class _VideoPageState extends State<VideoPage> {
                   ),
                   Padding(
                     padding: const EdgeInsets.only(top: 8.0),
-                    child: Text("hoge $index",
+                    child: Text(session.conferenceName,
                         style: textTheme.body1.copyWith(color: Colors.black54)),
                   ),
                 ],
@@ -128,11 +128,14 @@ class _VideoPageState extends State<VideoPage> {
         child: Row(
           children: <Widget>[
             SizedBox(
-              width: 32.0,
-              height: 32.0,
-//              child: Image(image:),
+              width: 40.0,
+              height: 40.0,
+              child: (speaker.icon != null) ? CircleAvatar(
+                backgroundImage: NetworkImage(speaker.icon),
+              ) : Container(),
             ),
             Container(
+              padding: EdgeInsets.only(left: 12.0),
               child: Text(speaker.name),
             )
           ],

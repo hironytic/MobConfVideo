@@ -44,6 +44,7 @@ class Session {
   Session({
     @required this.id,
     @required this.conferenceId,
+    @required this.conferenceName,
     @required this.title,
     @required this.description,
     @required this.starts,
@@ -55,6 +56,7 @@ class Session {
 
   final String id;
   final String conferenceId;
+  final String conferenceName;
   final String title;
   final String description;
   final DateTime starts;
@@ -94,6 +96,7 @@ class DefaultVideoBloc implements VideoBloc {
       Session(
         id: "iOSDC2018_229db830-848e-4496-b863-46f8ba690c5d",
         conferenceId: "iOSDC2018",
+        conferenceName: "iOSDC Japan 2018",
         title: "全部iOSにしゃべらせちゃえ！",
         description:
             "いっけなーい💦トークトーク🗣私、ひろん。今年もiOSDCのLTに応募したの✨でもiOSDCは競技LT🏅オーディエンスもいっぱいいるから緊張してしゃべれないよー🙀あ、そうだ💡AVSpeechSynthesizerちゃんとPDF Kitくんに頼めば、代わりに発表してくれるんじゃない？💕私あったまいいー…って本当に採択されたらどうしよう🆘次回「全部iOSにしゃべらせちゃえ！」お楽しみに",
@@ -113,6 +116,7 @@ class DefaultVideoBloc implements VideoBloc {
       Session(
         id: "DroidKaigi2018_16969",
         conferenceId: "DroidKaigi2018",
+        conferenceName: "DroidKaigi 2018",
         title: "Kotlinアンチパターン",
         description:
             "　KotlinはJavaよりもシンプルで安全なコードを書くことができます。また、同じ処理を書く場合も、いくつかのやり方があります。文法に関する説明は、公式ドキュメントを見れば分かりますが、使いどころ、特にAndroidアプリ開発における使いどころについては、まだそれぞれ模索している段階といってよいのではないでしょうか。\r\n　このセッションでは、私がフルKotlinのアプリをチームで開発した経験の中で分かった、Kotlinの各種文法の適切な使いどころや、バグを生みやすいコードのパターンなどを紹介してみたいと思います。\r\n　例えば、lateinitとnull初期化の使い分け、interfaceのデフォルト実装とabstractクラスの使い分け、引数なしの関数とcustom getterの使い分け、定数とlazyとcustom getterの使い分けなどがあります。また、property delegationの使いどころ、スコープ関数の使いどころ、レシーバー付き関数型の使いどころなど、Kotlinの基本文法を紹介しつつ、Androidアプリ開発をした経験からActivityライフサイクルやFragmentライフサイクルに合わせた使いどころ・注意点などについて解説してみたいと思います。",
