@@ -23,16 +23,27 @@
 // THE SOFTWARE.
 //
 
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:meta/meta.dart';
 
 class Event {
+  final String id;
+  final String name;
+  final bool isAccepting;
+
   Event({
     @required this.id,
     @required this.name,
     @required this.isAccepting,
   });
 
-  final String id;
-  final String name;
-  final bool isAccepting;
+  Event.fromSnapshot(DocumentSnapshot snapshot)
+      : this.fromMap(snapshot.documentID, snapshot.data);
+
+  Event.fromMap(String id, Map<String, dynamic> map)
+      : this(
+          id: id,
+          name: map["name"],
+          isAccepting: map["accepting"],
+        );
 }

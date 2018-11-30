@@ -23,9 +23,19 @@
 // THE SOFTWARE.
 //
 
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:meta/meta.dart';
 
 class Request {
+  final String id;
+  final String sessionId;
+  final String title;
+  final String conference;
+  final String videoUrl;
+  final String slideUrl;
+  final String memo;
+  final bool isWatched;
+
   Request({
     @required this.id,
     @required this.sessionId,
@@ -37,12 +47,18 @@ class Request {
     @required this.isWatched,
   });
 
-  final String id;
-  final String sessionId;
-  final String title;
-  final String conference;
-  final String videoUrl;
-  final String slideUrl;
-  final String memo;
-  final bool isWatched;
+  Request.fromSnapshot(DocumentSnapshot snapshot)
+      : this.fromMap(snapshot.documentID, snapshot.data);
+
+  Request.fromMap(String id, Map<String, dynamic> map)
+      : this(
+    id: id,
+    sessionId: map["sessionId"],
+    title: map["title"],
+    conference: map["conference"],
+    videoUrl: map["video"],
+    slideUrl: map["slide"],
+    memo: map["memo"],
+    isWatched: map["watched"],
+  );
 }

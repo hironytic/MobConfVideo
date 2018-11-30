@@ -23,6 +23,7 @@
 // THE SOFTWARE.
 //
 
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:mob_conf_video/model/request.dart';
 
 abstract class RequestRepository {
@@ -31,111 +32,16 @@ abstract class RequestRepository {
 
 class DefaultRequestRepository implements RequestRepository {
   Stream<List<Request>> getAllRequestsStream(String eventId) {
-    switch (eventId) {
-      case "id0":
-        return Stream.fromIterable([
-          <Request>[
-            Request(
-              id: "aaa",
-              title: "スマホアプリエンジニアだから知ってほしいブロックチェーンと分散型アプリケーション",
-              conference: "iOSDC Japan 2018",
-              isWatched: true,
-              videoUrl: null,
-              slideUrl: null,
-              sessionId: null,
-              memo: null,
-            ),
-            Request(
-              id: "bbb",
-              title: "DDD(ドメイン駆動設計)を知っていますか？？",
-              conference: "iOSDC 2018 Reject Conference",
-              isWatched: true,
-              videoUrl: null,
-              slideUrl: null,
-              sessionId: null,
-              memo: null,
-            ),
-            Request(
-              id: "ccc",
-              title: "再利用可能なUI Componentsを利用したアプリ開発",
-              conference: "iOSDC Japan 2018",
-              isWatched: false,
-              videoUrl: null,
-              slideUrl: null,
-              sessionId: null,
-              memo: null,
-            ),
-          ]
-        ]);
 
-      case "id1":
-        return Stream.fromIterable([
-          <Request>[
-            Request(
-              id: "aaa",
-              title: "50 分でわかるテスト駆動開発",
-              conference: "de:code 2017",
-              isWatched: true,
-              videoUrl: null,
-              slideUrl: null,
-              sessionId: null,
-              memo: null,
-            ),
-            Request(
-              id: "bbb",
-              title: "テストライブコーディング",
-              conference: "iOSDC 2018 Reject Conference",
-              isWatched: true,
-              videoUrl: null,
-              slideUrl: null,
-              sessionId: null,
-              memo: null,
-            ),
-            Request(
-              id: "ccc",
-              title: "テストライブコーディング",
-              conference: "iOSDC 2018 Reject Conference",
-              isWatched: true,
-              videoUrl: null,
-              slideUrl: null,
-              sessionId: null,
-              memo: null,
-            ),
-            Request(
-              id: "ccc",
-              title: "Kotlin コルーチンを理解しよう",
-              conference: "Kotlin Fest 2018",
-              isWatched: true,
-              videoUrl: null,
-              slideUrl: null,
-              sessionId: null,
-              memo: null,
-            ),
-            Request(
-              id: "ccc",
-              title: "Kioskアプリと端末の作り方",
-              conference: "DroidKaigi 2018",
-              isWatched: true,
-              videoUrl: null,
-              slideUrl: null,
-              sessionId: null,
-              memo: null,
-            ),
-            Request(
-              id: "ccc",
-              title: "アプリをエミュレートするアプリの登場とその危険性",
-              conference: "DroidKaigi 2018",
-              isWatched: true,
-              videoUrl: null,
-              slideUrl: null,
-              sessionId: null,
-              memo: null,
-            ),
-          ]
-        ]);
-
-      default:
-        return Stream.fromIterable([<Request>[]]);
-    }
+    var snapshots = Firestore.instance.collection("events")
+        .document(eventId)
+        .collection("requests")
+        .orderBy("requestedAt", descending: false)
+        .snapshots();
+    return snapshots.map((snapshot) {
+      return snapshot.documents.map((document) {
+        return Request.fromSnapshot(document);
+      }).toList();
+    });
   }
 }

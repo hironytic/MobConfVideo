@@ -24,6 +24,7 @@
 //
 
 import 'package:bloc_provider/bloc_provider.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:mob_conf_video/repository/event_repository.dart';
 import 'package:mob_conf_video/repository/request_repository.dart';
@@ -34,6 +35,7 @@ import 'package:mob_conf_video/view/video/video_page_bloc.dart';
 import 'package:mob_conf_video/view/video/video_page.dart';
 
 void main() {
+  Firestore.instance.settings(timestampsInSnapshotsEnabled: true);
   runApp(MyApp());
 }
 

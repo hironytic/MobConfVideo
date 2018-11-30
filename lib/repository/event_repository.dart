@@ -24,6 +24,7 @@
 //
 
 import 'package:mob_conf_video/model/event.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 abstract class EventRepository {
   Stream<List<Event>> getAllEventsStream();
@@ -31,29 +32,13 @@ abstract class EventRepository {
 
 class DefaultEventRepository implements EventRepository {
   Stream<List<Event>> getAllEventsStream() {
-    return Stream.fromIterable([
-      [
-        Event(
-          id: "id3",
-          name: "第3回 カンファレンス動画鑑賞会",
-          isAccepting: true,
-        ),
-        Event(
-          id: "id2",
-          name: "第2回 カンファレンス動画鑑賞会",
-          isAccepting: false,
-        ),
-        Event(
-          id: "id1",
-          name: "第1回 カンファレンス動画鑑賞会",
-          isAccepting: false,
-        ),
-        Event(
-          id: "id0",
-          name: "第0回 カンファレンス動画鑑賞会",
-          isAccepting: false,
-        ),
-      ]
-    ]);
+    var snapshots = Firestore.instance.collection("events")
+        .orderBy("starts", descending: true)
+        .snapshots();
+    return snapshots.map((snapshot) {
+      return snapshot.documents.map((document) {
+        return Event.fromSnapshot(document);
+      }).toList();
+    });
   }
 }
