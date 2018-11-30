@@ -27,7 +27,7 @@ import 'package:bloc_provider/bloc_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:mob_conf_video/model/request.dart';
 import 'package:mob_conf_video/model/event.dart';
-import 'package:mob_conf_video/ui/request/request_bloc.dart';
+import 'package:mob_conf_video/view/request/request_bloc.dart';
 
 class RequestPage extends StatelessWidget {
   RequestPage({Key key, this.bottomNavigationBar}) : super(key: key);
