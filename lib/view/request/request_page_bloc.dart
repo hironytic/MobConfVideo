@@ -26,9 +26,12 @@
 import 'dart:async';
 
 import 'package:bloc_provider/bloc_provider.dart';
+import 'package:meta/meta.dart';
 import 'package:mob_conf_video/common/hot_observables_holder.dart';
 import 'package:mob_conf_video/model/request.dart';
 import 'package:mob_conf_video/model/event.dart';
+import 'package:mob_conf_video/repository/event_repository.dart';
+import 'package:mob_conf_video/repository/request_repository.dart';
 import 'package:rxdart/rxdart.dart';
 
 abstract class RequestPageBloc implements Bloc {
@@ -45,187 +48,59 @@ class DefaultRequestPageBloc implements RequestPageBloc {
   Sink<String> get targetSelection => _targetSelection.sink;
 
   Stream<Event> get currentTarget => _currentTarget;
+  List<Event> get availableTargets => _availableTargets;
   Stream<List<Request>> get requests => _requests;
 
-  final _hotObservablesHolder = new HotObservablesHolder();
+  final EventRepository eventRepository;
+  final RequestRepository requestRepository;
+
+  final _hotObservablesHolder = HotObservablesHolder();
   final _targetSelection = PublishSubject<String>();
   Observable<Event> _currentTarget;
+  List<Event> _availableTargets = [];
+  StreamSubscription<List<Event>> _allEventsSubscription;
   Observable<List<Request>> _requests;
 
-  List<Event> get availableTargets {
-    return [
-      Event(
-        id: "id3",
-        name: "第3回 カンファレンス動画鑑賞会",
-        isAccepting: false,
-      ),
-      Event(
-        id: "id2",
-        name: "第2回 カンファレンス動画鑑賞会",
-        isAccepting: false,
-      ),
-      Event(
-        id: "id1",
-        name: "第1回 カンファレンス動画鑑賞会",
-        isAccepting: false,
-      ),
-      Event(
-        id: "id0",
-        name: "第0回 カンファレンス動画鑑賞会",
-        isAccepting: false,
-      ),
-    ];
-  }
+  DefaultRequestPageBloc({
+    @required this.eventRepository,
+    @required this.requestRepository,
+  }) {
+    final allEvents = Observable(eventRepository.getAllEventsStream())
+        .shareReplay(maxSize: 1);
 
-  DefaultRequestPageBloc() {
-    final targetSelectionWithDefault =
-        _targetSelection.startWith("id3").distinct().shareReplay(maxSize: 1);
+    _allEventsSubscription = allEvents.listen((events) {
+      _availableTargets = events;
+    });
 
-    _currentTarget = _hotObservablesHolder
-        .replayConnect(targetSelectionWithDefault.map((id) {
-      switch (id) {
-        case "id0":
-          return Event(
-            id: "id0",
-            name: "第0回 カンファレンス動画鑑賞会",
-            isAccepting: false,
-          );
+    // The default selection is the request which is the first one
+    // in the first all-events-list
+    final targetSelectionWithDefault = Observable.concat([
+      allEvents.take(1).map((events) => (events.length > 0) ? events[0].id : null),
+      _targetSelection,
+    ]).distinct().shareReplay(maxSize: 1);
 
-        case "id1":
-          return Event(
-            id: "id1",
-            name: "第1回 カンファレンス動画鑑賞会",
-            isAccepting: false,
-          );
-
-        case "id2":
-          return Event(
-            id: "id2",
-            name: "第2回 カンファレンス動画鑑賞会",
-            isAccepting: false,
-          );
-
-        case "id3":
-          return Event(
-            id: "id3",
-            name: "第3回 カンファレンス動画鑑賞会",
-            isAccepting: true,
-          );
-
-        default:
-          return null;
+    final currentTarget = targetSelectionWithDefault.withLatestFrom(allEvents,
+        (eventId, List<Event> events) {
+      if (eventId == null) {
+        return null;
       }
-    }));
+      return events.firstWhere((event) => event.id == eventId, orElse: () => null);
+    });
+    _currentTarget = _hotObservablesHolder.replayConnect(currentTarget);
 
-    _requests = _hotObservablesHolder
-        .replayConnect(targetSelectionWithDefault.switchMap((id) {
-      switch (id) {
-        case "id0":
-          return Observable.just(<Request>[
-            Request(
-              id: "aaa",
-              title: "スマホアプリエンジニアだから知ってほしいブロックチェーンと分散型アプリケーション",
-              conference: "iOSDC Japan 2018",
-              isWatched: true,
-              videoUrl: null,
-              slideUrl: null,
-              sessionId: null,
-              memo: null,
-            ),
-            Request(
-              id: "bbb",
-              title: "DDD(ドメイン駆動設計)を知っていますか？？",
-              conference: "iOSDC 2018 Reject Conference",
-              isWatched: true,
-              videoUrl: null,
-              slideUrl: null,
-              sessionId: null,
-              memo: null,
-            ),
-            Request(
-              id: "ccc",
-              title: "再利用可能なUI Componentsを利用したアプリ開発",
-              conference: "iOSDC Japan 2018",
-              isWatched: false,
-              videoUrl: null,
-              slideUrl: null,
-              sessionId: null,
-              memo: null,
-            ),
-          ]);
-
-        case "id1":
-          return Observable.just(<Request>[
-            Request(
-              id: "aaa",
-              title: "50 分でわかるテスト駆動開発",
-              conference: "de:code 2017",
-              isWatched: true,
-              videoUrl: null,
-              slideUrl: null,
-              sessionId: null,
-              memo: null,
-            ),
-            Request(
-              id: "bbb",
-              title: "テストライブコーディング",
-              conference: "iOSDC 2018 Reject Conference",
-              isWatched: true,
-              videoUrl: null,
-              slideUrl: null,
-              sessionId: null,
-              memo: null,
-            ),
-            Request(
-              id: "ccc",
-              title: "テストライブコーディング",
-              conference: "iOSDC 2018 Reject Conference",
-              isWatched: true,
-              videoUrl: null,
-              slideUrl: null,
-              sessionId: null,
-              memo: null,
-            ),
-            Request(
-              id: "ccc",
-              title: "Kotlin コルーチンを理解しよう",
-              conference: "Kotlin Fest 2018",
-              isWatched: true,
-              videoUrl: null,
-              slideUrl: null,
-              sessionId: null,
-              memo: null,
-            ),
-            Request(
-              id: "ccc",
-              title: "Kioskアプリと端末の作り方",
-              conference: "DroidKaigi 2018",
-              isWatched: true,
-              videoUrl: null,
-              slideUrl: null,
-              sessionId: null,
-              memo: null,
-            ),
-            Request(
-              id: "ccc",
-              title: "アプリをエミュレートするアプリの登場とその危険性",
-              conference: "DroidKaigi 2018",
-              isWatched: true,
-              videoUrl: null,
-              slideUrl: null,
-              sessionId: null,
-              memo: null,
-            ),
-          ]);
-
-        default:
-          return Observable<List<Request>>.just(<Request>[]);
+    final requests = targetSelectionWithDefault.switchMap((eventId) {
+      if (eventId == null) {
+        return Observable<List<Request>>.empty();
+      } else {
+        return Observable(requestRepository.getAllRequestsStream(eventId));
       }
-    }));
+    });
+    _requests = _hotObservablesHolder.replayConnect(requests);
   }
 
   void dispose() {
     _hotObservablesHolder.dispose();
     _targetSelection.close();
+    _allEventsSubscription.cancel();
   }
 }

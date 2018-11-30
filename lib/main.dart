@@ -25,6 +25,8 @@
 
 import 'package:bloc_provider/bloc_provider.dart';
 import 'package:flutter/material.dart';
+import 'package:mob_conf_video/repository/event_repository.dart';
+import 'package:mob_conf_video/repository/request_repository.dart';
 import 'package:mob_conf_video/view/favorite/favorite_page.dart';
 import 'package:mob_conf_video/view/request/request_page_bloc.dart';
 import 'package:mob_conf_video/view/request/request_page.dart';
@@ -40,8 +42,14 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    var eventRepository = DefaultEventRepository();
+    var requestRepository = DefaultRequestRepository();
+
     return BlocProvider<RequestPageBloc>(
-      creator: (context) => DefaultRequestPageBloc(),
+      creator: (context) => DefaultRequestPageBloc(
+        eventRepository: eventRepository,
+        requestRepository: requestRepository,
+      ),
       child: BlocProvider<VideoPageBloc>(
         creator: (context) => DefaultVideoPageBloc(),
         child: MaterialApp(
