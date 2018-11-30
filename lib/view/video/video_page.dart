@@ -26,7 +26,7 @@
 import 'package:bloc_provider/bloc_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:mob_conf_video/model/session.dart';
-import 'package:mob_conf_video/view/video/video_bloc.dart';
+import 'package:mob_conf_video/view/video/video_page_bloc.dart';
 
 class VideoPage extends StatefulWidget {
   VideoPage({Key key, this.bottomNavigationBar}) : super(key: key);
@@ -58,7 +58,7 @@ class _VideoPageState extends State<VideoPage> {
   }
 
   Widget _buildBody(BuildContext context) {
-    final VideoBloc videoBloc = BlocProvider.of(context);
+    final VideoPageBloc videoBloc = BlocProvider.of(context);
 
     return StreamBuilder(
       stream: videoBloc.sessions,

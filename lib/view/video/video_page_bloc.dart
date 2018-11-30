@@ -1,5 +1,5 @@
 //
-// video_bloc.dart
+// video_page_bloc.dart
 // mob_conf_video
 //
 // Copyright (c) 2018 Hironori Ichimiya <hiron@hironytic.com>
@@ -29,20 +29,20 @@ import 'package:mob_conf_video/model/session.dart';
 import 'package:mob_conf_video/model/speaker.dart';
 import 'package:rxdart/rxdart.dart';
 
-abstract class VideoBloc implements Bloc {
+abstract class VideoPageBloc implements Bloc {
   // inputs
 
   // outputs
   Stream<List<Session>> get sessions;
 }
 
-class DefaultVideoBloc implements VideoBloc {
+class DefaultVideoPageBloc implements VideoPageBloc {
   Stream<List<Session>> get sessions => _sessions;
 
   final _hotObservablesHolder = HotObservablesHolder();
   Observable<List<Session>> _sessions;
 
-  DefaultVideoBloc() {
+  DefaultVideoPageBloc() {
     _sessions = _hotObservablesHolder.replayConnect(Observable.just([
       Session(
         id: "iOSDC2018_229db830-848e-4496-b863-46f8ba690c5d",

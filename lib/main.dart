@@ -26,9 +26,9 @@
 import 'package:bloc_provider/bloc_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:mob_conf_video/view/favorite/favorite_page.dart';
-import 'package:mob_conf_video/view/request/request_bloc.dart';
+import 'package:mob_conf_video/view/request/request_page_bloc.dart';
 import 'package:mob_conf_video/view/request/request_page.dart';
-import 'package:mob_conf_video/view/video/video_bloc.dart';
+import 'package:mob_conf_video/view/video/video_page_bloc.dart';
 import 'package:mob_conf_video/view/video/video_page.dart';
 
 void main() {
@@ -40,10 +40,10 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return BlocProvider<RequestBloc>(
-      creator: (context) => DefaultRequestBloc(),
-      child: BlocProvider<VideoBloc>(
-        creator: (context) => DefaultVideoBloc(),
+    return BlocProvider<RequestPageBloc>(
+      creator: (context) => DefaultRequestPageBloc(),
+      child: BlocProvider<VideoPageBloc>(
+        creator: (context) => DefaultVideoPageBloc(),
         child: MaterialApp(
           title: 'MobConfVideo',
           theme: ThemeData(

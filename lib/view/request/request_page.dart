@@ -27,7 +27,7 @@ import 'package:bloc_provider/bloc_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:mob_conf_video/model/request.dart';
 import 'package:mob_conf_video/model/event.dart';
-import 'package:mob_conf_video/view/request/request_bloc.dart';
+import 'package:mob_conf_video/view/request/request_page_bloc.dart';
 
 class RequestPage extends StatelessWidget {
   RequestPage({Key key, this.bottomNavigationBar}) : super(key: key);
@@ -44,7 +44,7 @@ class RequestPage extends StatelessWidget {
   }
 
   Widget _buildAppBar(BuildContext context) {
-    final RequestBloc requestBloc = BlocProvider.of(context);
+    final RequestPageBloc requestBloc = BlocProvider.of(context);
     Color downArrowColor;
     if (Theme.of(context).primaryColorBrightness == Brightness.light) {
       downArrowColor = Colors.grey.shade700;
@@ -83,7 +83,7 @@ class RequestPage extends StatelessWidget {
   }
 
   Widget _buildBody(BuildContext context) {
-    final RequestBloc requestBloc = BlocProvider.of(context);
+    final RequestPageBloc requestBloc = BlocProvider.of(context);
     return StreamBuilder<List<Request>>(
       stream: requestBloc.requests,
       builder: (buildContext, snapshot) {

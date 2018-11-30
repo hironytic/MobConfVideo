@@ -1,5 +1,5 @@
 //
-// request_bloc.dart
+// request_page_bloc.dart
 // mob_conf_video
 //
 // Copyright (c) 2018 Hironori Ichimiya <hiron@hironytic.com>
@@ -31,7 +31,7 @@ import 'package:mob_conf_video/model/request.dart';
 import 'package:mob_conf_video/model/event.dart';
 import 'package:rxdart/rxdart.dart';
 
-abstract class RequestBloc implements Bloc {
+abstract class RequestPageBloc implements Bloc {
   // inputs
   Sink<String> get targetSelection;
 
@@ -41,7 +41,7 @@ abstract class RequestBloc implements Bloc {
   Stream<List<Request>> get requests;
 }
 
-class DefaultRequestBloc implements RequestBloc {
+class DefaultRequestPageBloc implements RequestPageBloc {
   Sink<String> get targetSelection => _targetSelection.sink;
 
   Stream<Event> get currentTarget => _currentTarget;
@@ -77,7 +77,7 @@ class DefaultRequestBloc implements RequestBloc {
     ];
   }
 
-  DefaultRequestBloc() {
+  DefaultRequestPageBloc() {
     final targetSelectionWithDefault =
         _targetSelection.startWith("id3").distinct().shareReplay(maxSize: 1);
 
