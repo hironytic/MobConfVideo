@@ -25,7 +25,7 @@
 
 import 'package:bloc_provider/bloc_provider.dart';
 import 'package:flutter/material.dart';
-import 'package:mob_conf_video/video/video_bloc.dart';
+import 'package:mob_conf_video/ui/video/video_bloc.dart';
 
 class VideoPage extends StatefulWidget {
   VideoPage({Key key, this.bottomNavigationBar}) : super(key: key);
