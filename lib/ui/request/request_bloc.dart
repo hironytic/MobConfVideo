@@ -27,7 +27,7 @@ import 'dart:async';
 
 import 'package:bloc_provider/bloc_provider.dart';
 import 'package:mob_conf_video/common/hot_observables_holder.dart';
-import 'package:mob_conf_video/model/request_item.dart';
+import 'package:mob_conf_video/model/request.dart';
 import 'package:mob_conf_video/model/event.dart';
 import 'package:rxdart/rxdart.dart';
 
@@ -38,19 +38,19 @@ abstract class RequestBloc implements Bloc {
   // outputs
   Stream<Event> get currentTarget;
   List<Event> get availableTargets;
-  Stream<List<RequestItem>> get requestItems;
+  Stream<List<Request>> get requests;
 }
 
 class DefaultRequestBloc implements RequestBloc {
   Sink<String> get targetSelection => _targetSelection.sink;
 
   Stream<Event> get currentTarget => _currentTarget;
-  Stream<List<RequestItem>> get requestItems => _requestItems;
+  Stream<List<Request>> get requests => _requests;
 
   final _hotObservablesHolder = new HotObservablesHolder();
   final _targetSelection = PublishSubject<String>();
   Observable<Event> _currentTarget;
-  Observable<List<RequestItem>> _requestItems;
+  Observable<List<Request>> _requests;
 
   List<Event> get availableTargets {
     return [
@@ -117,12 +117,12 @@ class DefaultRequestBloc implements RequestBloc {
       }
     }));
 
-    _requestItems = _hotObservablesHolder
+    _requests = _hotObservablesHolder
         .replayConnect(targetSelectionWithDefault.switchMap((id) {
       switch (id) {
         case "id0":
-          return Observable.just(<RequestItem>[
-            RequestItem(
+          return Observable.just(<Request>[
+            Request(
               id: "aaa",
               title: "スマホアプリエンジニアだから知ってほしいブロックチェーンと分散型アプリケーション",
               conference: "iOSDC Japan 2018",
@@ -132,7 +132,7 @@ class DefaultRequestBloc implements RequestBloc {
               sessionId: null,
               memo: null,
             ),
-            RequestItem(
+            Request(
               id: "bbb",
               title: "DDD(ドメイン駆動設計)を知っていますか？？",
               conference: "iOSDC 2018 Reject Conference",
@@ -142,7 +142,7 @@ class DefaultRequestBloc implements RequestBloc {
               sessionId: null,
               memo: null,
             ),
-            RequestItem(
+            Request(
               id: "ccc",
               title: "再利用可能なUI Componentsを利用したアプリ開発",
               conference: "iOSDC Japan 2018",
@@ -155,8 +155,8 @@ class DefaultRequestBloc implements RequestBloc {
           ]);
 
         case "id1":
-          return Observable.just(<RequestItem>[
-            RequestItem(
+          return Observable.just(<Request>[
+            Request(
               id: "aaa",
               title: "50 分でわかるテスト駆動開発",
               conference: "de:code 2017",
@@ -166,7 +166,7 @@ class DefaultRequestBloc implements RequestBloc {
               sessionId: null,
               memo: null,
             ),
-            RequestItem(
+            Request(
               id: "bbb",
               title: "テストライブコーディング",
               conference: "iOSDC 2018 Reject Conference",
@@ -176,7 +176,7 @@ class DefaultRequestBloc implements RequestBloc {
               sessionId: null,
               memo: null,
             ),
-            RequestItem(
+            Request(
               id: "ccc",
               title: "テストライブコーディング",
               conference: "iOSDC 2018 Reject Conference",
@@ -186,7 +186,7 @@ class DefaultRequestBloc implements RequestBloc {
               sessionId: null,
               memo: null,
             ),
-            RequestItem(
+            Request(
               id: "ccc",
               title: "Kotlin コルーチンを理解しよう",
               conference: "Kotlin Fest 2018",
@@ -196,7 +196,7 @@ class DefaultRequestBloc implements RequestBloc {
               sessionId: null,
               memo: null,
             ),
-            RequestItem(
+            Request(
               id: "ccc",
               title: "Kioskアプリと端末の作り方",
               conference: "DroidKaigi 2018",
@@ -206,7 +206,7 @@ class DefaultRequestBloc implements RequestBloc {
               sessionId: null,
               memo: null,
             ),
-            RequestItem(
+            Request(
               id: "ccc",
               title: "アプリをエミュレートするアプリの登場とその危険性",
               conference: "DroidKaigi 2018",
@@ -219,7 +219,7 @@ class DefaultRequestBloc implements RequestBloc {
           ]);
 
         default:
-          return Observable<List<RequestItem>>.just(<RequestItem>[]);
+          return Observable<List<Request>>.just(<Request>[]);
       }
     }));
   }

@@ -25,7 +25,7 @@
 
 import 'package:bloc_provider/bloc_provider.dart';
 import 'package:flutter/material.dart';
-import 'package:mob_conf_video/model/request_item.dart';
+import 'package:mob_conf_video/model/request.dart';
 import 'package:mob_conf_video/model/event.dart';
 import 'package:mob_conf_video/ui/request/request_bloc.dart';
 
@@ -84,8 +84,8 @@ class RequestPage extends StatelessWidget {
 
   Widget _buildBody(BuildContext context) {
     final RequestBloc requestBloc = BlocProvider.of(context);
-    return StreamBuilder<List<RequestItem>>(
-      stream: requestBloc.requestItems,
+    return StreamBuilder<List<Request>>(
+      stream: requestBloc.requests,
       builder: (buildContext, snapshot) {
         if (snapshot.data == null) {
           return Container();

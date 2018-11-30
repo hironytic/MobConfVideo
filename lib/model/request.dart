@@ -1,5 +1,5 @@
 //
-// request_item.dart
+// request.dart
 // mob_conf_video
 //
 // Copyright (c) 2018 Hironori Ichimiya <hiron@hironytic.com>
@@ -25,8 +25,8 @@
 
 import 'package:meta/meta.dart';
 
-class RequestItem {
-  RequestItem({
+class Request {
+  Request({
     @required this.id,
     @required this.sessionId,
     @required this.title,
