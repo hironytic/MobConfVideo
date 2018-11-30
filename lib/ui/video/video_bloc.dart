@@ -24,59 +24,10 @@
 //
 
 import 'package:bloc_provider/bloc_provider.dart';
-import 'package:meta/meta.dart';
 import 'package:mob_conf_video/common/hot_observables_holder.dart';
+import 'package:mob_conf_video/model/session.dart';
+import 'package:mob_conf_video/model/speaker.dart';
 import 'package:rxdart/rxdart.dart';
-
-class Conference {
-  Conference({
-    @required this.id,
-    @required this.name,
-    @required this.starts,
-  });
-
-  final String id;
-  final String name;
-  final DateTime starts;
-}
-
-class Session {
-  Session({
-    @required this.id,
-    @required this.conferenceId,
-    @required this.conferenceName,
-    @required this.title,
-    @required this.description,
-    @required this.starts,
-    @required this.minutes,
-    @required this.slide,
-    @required this.video,
-    @required this.speakers,
-  });
-
-  final String id;
-  final String conferenceId;
-  final String conferenceName;
-  final String title;
-  final String description;
-  final DateTime starts;
-  final int minutes;
-  final String slide;
-  final String video;
-  final List<Speaker> speakers;
-}
-
-class Speaker {
-  Speaker({
-    @required this.name,
-    @required this.twitter,
-    @required this.icon,
-  });
-
-  final String name;
-  final String twitter;
-  final String icon;
-}
 
 abstract class VideoBloc implements Bloc {
   // inputs

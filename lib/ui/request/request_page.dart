@@ -25,6 +25,8 @@
 
 import 'package:bloc_provider/bloc_provider.dart';
 import 'package:flutter/material.dart';
+import 'package:mob_conf_video/model/request_item.dart';
+import 'package:mob_conf_video/model/event.dart';
 import 'package:mob_conf_video/ui/request/request_bloc.dart';
 
 class RequestPage extends StatelessWidget {
@@ -59,7 +61,7 @@ class RequestPage extends StatelessWidget {
               .toList();
         },
         onSelected: (value) => requestBloc.targetSelection.add(value),
-        child: StreamBuilder<RequestTarget>(
+        child: StreamBuilder<Event>(
             stream: requestBloc.currentTarget,
             builder: (context, snapshot) {
               return Row(

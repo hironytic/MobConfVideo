@@ -27,76 +27,49 @@ import 'dart:async';
 
 import 'package:bloc_provider/bloc_provider.dart';
 import 'package:mob_conf_video/common/hot_observables_holder.dart';
+import 'package:mob_conf_video/model/request_item.dart';
+import 'package:mob_conf_video/model/event.dart';
 import 'package:rxdart/rxdart.dart';
-
-class RequestTarget {
-  RequestTarget({this.id, this.name, this.isAccepting});
-
-  final String id;
-  final String name;
-  final bool isAccepting;
-}
-
-class RequestItem {
-  RequestItem(
-      {this.id,
-      this.sessionId,
-      this.title,
-      this.conference,
-      this.videoUrl,
-      this.slideUrl,
-      this.message,
-      this.isWatched});
-
-  final String id;
-  final String sessionId;
-  final String title;
-  final String conference;
-  final String videoUrl;
-  final String slideUrl;
-  final String message;
-  final bool isWatched;
-}
 
 abstract class RequestBloc implements Bloc {
   // inputs
   Sink<String> get targetSelection;
 
   // outputs
-  Stream<RequestTarget> get currentTarget;
-  List<RequestTarget> get availableTargets;
+  Stream<Event> get currentTarget;
+  List<Event> get availableTargets;
   Stream<List<RequestItem>> get requestItems;
 }
 
 class DefaultRequestBloc implements RequestBloc {
   Sink<String> get targetSelection => _targetSelection.sink;
 
-  Stream<RequestTarget> get currentTarget => _currentTarget;
+  Stream<Event> get currentTarget => _currentTarget;
   Stream<List<RequestItem>> get requestItems => _requestItems;
 
   final _hotObservablesHolder = new HotObservablesHolder();
   final _targetSelection = PublishSubject<String>();
-  Observable<RequestTarget> _currentTarget;
+  Observable<Event> _currentTarget;
   Observable<List<RequestItem>> _requestItems;
 
-  List<RequestTarget> get availableTargets {
+  List<Event> get availableTargets {
     return [
-      RequestTarget(
+      Event(
         id: "id3",
         name: "第3回 カンファレンス動画鑑賞会",
         isAccepting: false,
       ),
-      RequestTarget(
+      Event(
         id: "id2",
         name: "第2回 カンファレンス動画鑑賞会",
         isAccepting: false,
       ),
-      RequestTarget(
+      Event(
         id: "id1",
         name: "第1回 カンファレンス動画鑑賞会",
         isAccepting: false,
       ),
-      RequestTarget(
+      Event(
         id: "id0",
         name: "第0回 カンファレンス動画鑑賞会",
         isAccepting: false,
@@ -112,28 +85,28 @@ class DefaultRequestBloc implements RequestBloc {
         .replayConnect(targetSelectionWithDefault.map((id) {
       switch (id) {
         case "id0":
-          return RequestTarget(
+          return Event(
             id: "id0",
             name: "第0回 カンファレンス動画鑑賞会",
             isAccepting: false,
           );
 
         case "id1":
-          return RequestTarget(
+          return Event(
             id: "id1",
             name: "第1回 カンファレンス動画鑑賞会",
             isAccepting: false,
           );
 
         case "id2":
-          return RequestTarget(
+          return Event(
             id: "id2",
             name: "第2回 カンファレンス動画鑑賞会",
             isAccepting: false,
           );
 
         case "id3":
-          return RequestTarget(
+          return Event(
             id: "id3",
             name: "第3回 カンファレンス動画鑑賞会",
             isAccepting: true,
@@ -154,18 +127,30 @@ class DefaultRequestBloc implements RequestBloc {
               title: "スマホアプリエンジニアだから知ってほしいブロックチェーンと分散型アプリケーション",
               conference: "iOSDC Japan 2018",
               isWatched: true,
+              videoUrl: null,
+              slideUrl: null,
+              sessionId: null,
+              memo: null,
             ),
             RequestItem(
               id: "bbb",
               title: "DDD(ドメイン駆動設計)を知っていますか？？",
               conference: "iOSDC 2018 Reject Conference",
               isWatched: true,
+              videoUrl: null,
+              slideUrl: null,
+              sessionId: null,
+              memo: null,
             ),
             RequestItem(
               id: "ccc",
               title: "再利用可能なUI Componentsを利用したアプリ開発",
               conference: "iOSDC Japan 2018",
               isWatched: false,
+              videoUrl: null,
+              slideUrl: null,
+              sessionId: null,
+              memo: null,
             ),
           ]);
 
@@ -176,36 +161,60 @@ class DefaultRequestBloc implements RequestBloc {
               title: "50 分でわかるテスト駆動開発",
               conference: "de:code 2017",
               isWatched: true,
+              videoUrl: null,
+              slideUrl: null,
+              sessionId: null,
+              memo: null,
             ),
             RequestItem(
               id: "bbb",
               title: "テストライブコーディング",
               conference: "iOSDC 2018 Reject Conference",
               isWatched: true,
+              videoUrl: null,
+              slideUrl: null,
+              sessionId: null,
+              memo: null,
             ),
             RequestItem(
               id: "ccc",
               title: "テストライブコーディング",
               conference: "iOSDC 2018 Reject Conference",
               isWatched: true,
+              videoUrl: null,
+              slideUrl: null,
+              sessionId: null,
+              memo: null,
             ),
             RequestItem(
               id: "ccc",
               title: "Kotlin コルーチンを理解しよう",
               conference: "Kotlin Fest 2018",
               isWatched: true,
+              videoUrl: null,
+              slideUrl: null,
+              sessionId: null,
+              memo: null,
             ),
             RequestItem(
               id: "ccc",
               title: "Kioskアプリと端末の作り方",
               conference: "DroidKaigi 2018",
               isWatched: true,
+              videoUrl: null,
+              slideUrl: null,
+              sessionId: null,
+              memo: null,
             ),
             RequestItem(
               id: "ccc",
               title: "アプリをエミュレートするアプリの登場とその危険性",
               conference: "DroidKaigi 2018",
               isWatched: true,
+              videoUrl: null,
+              slideUrl: null,
+              sessionId: null,
+              memo: null,
             ),
           ]);
 

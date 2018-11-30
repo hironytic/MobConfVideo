@@ -25,6 +25,7 @@
 
 import 'package:bloc_provider/bloc_provider.dart';
 import 'package:flutter/material.dart';
+import 'package:mob_conf_video/model/session.dart';
 import 'package:mob_conf_video/ui/video/video_bloc.dart';
 
 class VideoPage extends StatefulWidget {
