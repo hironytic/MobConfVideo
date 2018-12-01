@@ -41,7 +41,7 @@ abstract class RequestPageBloc implements Bloc {
   // outputs
   Stream<Event> get currentTarget;
   List<Event> get availableTargets;
-  Stream<List<Request>> get requests;
+  Stream<Iterable<Request>> get requests;
 }
 
 class DefaultRequestPageBloc implements RequestPageBloc {
@@ -49,7 +49,7 @@ class DefaultRequestPageBloc implements RequestPageBloc {
 
   Stream<Event> get currentTarget => _currentTarget;
   List<Event> get availableTargets => _availableTargets;
-  Stream<List<Request>> get requests => _requests;
+  Stream<Iterable<Request>> get requests => _requests;
 
   final EventRepository eventRepository;
   final RequestRepository requestRepository;
@@ -59,13 +59,14 @@ class DefaultRequestPageBloc implements RequestPageBloc {
   Observable<Event> _currentTarget;
   List<Event> _availableTargets = [];
   StreamSubscription<List<Event>> _allEventsSubscription;
-  Observable<List<Request>> _requests;
+  Observable<Iterable<Request>> _requests;
 
   DefaultRequestPageBloc({
     @required this.eventRepository,
     @required this.requestRepository,
   }) {
     final allEvents = Observable(eventRepository.getAllEventsStream())
+        .map ((iterable) => iterable.toList())
         .shareReplay(maxSize: 1);
 
     _allEventsSubscription = allEvents.listen((events) {
@@ -90,7 +91,7 @@ class DefaultRequestPageBloc implements RequestPageBloc {
 
     final requests = targetSelectionWithDefault.switchMap((eventId) {
       if (eventId == null) {
-        return Observable<List<Request>>.empty();
+        return Observable<Iterable<Request>>.empty();
       } else {
         return Observable(requestRepository.getAllRequestsStream(eventId));
       }

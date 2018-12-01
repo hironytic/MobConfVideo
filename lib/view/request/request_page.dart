@@ -84,7 +84,7 @@ class RequestPage extends StatelessWidget {
 
   Widget _buildBody(BuildContext context) {
     final RequestPageBloc requestBloc = BlocProvider.of(context);
-    return StreamBuilder<List<Request>>(
+    return StreamBuilder<Iterable<Request>>(
       stream: requestBloc.requests,
       builder: (buildContext, snapshot) {
         if (snapshot.data == null) {
@@ -97,7 +97,7 @@ class RequestPage extends StatelessWidget {
             itemCount: items.length,
             separatorBuilder: (context, index) => Divider(),
             itemBuilder: (context, index) {
-              final item = items[index];
+              final item = items.elementAt(index);
               return ListTile(
                 key: ObjectKey(item.id),
                 title: Text(item.title),

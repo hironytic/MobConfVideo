@@ -27,18 +27,18 @@ import 'package:mob_conf_video/model/event.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 abstract class EventRepository {
-  Stream<List<Event>> getAllEventsStream();
+  Stream<Iterable<Event>> getAllEventsStream();
 }
 
 class DefaultEventRepository implements EventRepository {
-  Stream<List<Event>> getAllEventsStream() {
+  Stream<Iterable<Event>> getAllEventsStream() {
     var snapshots = Firestore.instance.collection("events")
         .orderBy("starts", descending: true)
         .snapshots();
     return snapshots.map((snapshot) {
       return snapshot.documents.map((document) {
         return Event.fromSnapshot(document);
-      }).toList();
+      });
     });
   }
 }

@@ -27,11 +27,11 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:mob_conf_video/model/request.dart';
 
 abstract class RequestRepository {
-  Stream<List<Request>> getAllRequestsStream(String eventId);
+  Stream<Iterable<Request>> getAllRequestsStream(String eventId);
 }
 
 class DefaultRequestRepository implements RequestRepository {
-  Stream<List<Request>> getAllRequestsStream(String eventId) {
+  Stream<Iterable<Request>> getAllRequestsStream(String eventId) {
 
     var snapshots = Firestore.instance.collection("events")
         .document(eventId)
@@ -41,7 +41,7 @@ class DefaultRequestRepository implements RequestRepository {
     return snapshots.map((snapshot) {
       return snapshot.documents.map((document) {
         return Request.fromSnapshot(document);
-      }).toList();
+      });
     });
   }
 }

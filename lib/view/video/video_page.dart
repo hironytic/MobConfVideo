@@ -67,14 +67,14 @@ class _VideoPageState extends State<VideoPage> {
           return Container();
         }
 
-        List<Session> sessions = snapshot.data;
+        Iterable<Session> sessions = snapshot.data;
         return ListView.builder(
           itemCount: sessions.length + 1,
           itemBuilder: (context, index) {
             if (index == 0) {
               return _buildFilterPanel(context);
             } else {
-              return _buildSession(context, sessions[index - 1], index - 1);
+              return _buildSession(context, sessions.elementAt(index - 1), index - 1);
             }
           },
         );
