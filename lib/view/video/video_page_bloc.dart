@@ -24,25 +24,106 @@
 //
 
 import 'package:bloc_provider/bloc_provider.dart';
+import 'package:mob_conf_video/common/dropdown_state.dart';
 import 'package:mob_conf_video/common/hot_observables_holder.dart';
+import 'package:mob_conf_video/model/conference.dart';
 import 'package:mob_conf_video/model/session.dart';
 import 'package:mob_conf_video/model/speaker.dart';
 import 'package:rxdart/rxdart.dart';
 
+enum SessionTime {
+  notSpecified,
+  within15Minutes,
+  within30Minutes,
+  within60Minutes,
+}
+
 abstract class VideoPageBloc implements Bloc {
   // inputs
+  Sink<bool> get expandFilterPanel;
+  Sink<String> get filterConferenceChanged;
+  Sink<SessionTime> get filterSessionTimeChanged;
+  Sink<void> get executeFilter;
 
   // outputs
+  Stream<bool> get isFilterPanelExpanded;
+  Stream<DropdownState<String>> get filterConference;
+  Stream<DropdownState<SessionTime>> get filterSessionTime;
   Stream<Iterable<Session>> get sessions;
 }
 
 class DefaultVideoPageBloc implements VideoPageBloc {
-  Stream<Iterable<Session>> get sessions => _sessions;
+  get expandFilterPanel => _expandFilterPanel;
+  get filterConferenceChanged => _filterConferenceChanged;
+  get filterSessionTimeChanged => _filterSessionTimeChanged;
+  get executeFilter => _executeFilter;
+
+  get isFilterPanelExpanded => _isFilterPanelExpanded;
+  get filterConference => _filterConference;
+  get filterSessionTime => _filterSessionTime;
+  get sessions => _sessions;
 
   final _hotObservablesHolder = HotObservablesHolder();
+  final _expandFilterPanel = PublishSubject<bool>();
+  final _filterConferenceChanged = PublishSubject<String>();
+  final _filterSessionTimeChanged = PublishSubject<SessionTime>();
+  final _executeFilter = PublishSubject<void>();
+  Observable<bool> _isFilterPanelExpanded;
+  Stream<DropdownState<String>> _filterConference;
+  Stream<DropdownState<SessionTime>> _filterSessionTime;
   Observable<Iterable<Session>> _sessions;
 
   DefaultVideoPageBloc() {
+    var executeFilter = _executeFilter.shareReplay(maxSize: 1);
+    var expandFilterPanel = _expandFilterPanel.shareReplay(maxSize: 1);
+
+    _isFilterPanelExpanded = _hotObservablesHolder.replayConnect(
+      Observable<bool>.merge([
+        expandFilterPanel,
+        executeFilter.map((_) => false), // also closes on executing the filter
+      ]).startWith(false),
+    );
+
+    final conference1 = Conference(
+      id: "iOSDC2018",
+      name: "iOSDC Japan 2018",
+      starts: DateTime(2018, 8, 30, 18, 00),
+    );
+    final conference2 = Conference(
+      id: "DroidKaigi2018",
+      name: "DroidKaigi 2018",
+      starts: DateTime(2018, 2, 8, 10, 00),
+    );
+
+    _filterConference = _hotObservablesHolder.replayConnect(
+      Observable.just(
+        DropdownState(
+          value: conference1.id,
+          items: [
+            DropdownStateItem(value: conference1.id, title: conference1.name),
+            DropdownStateItem(value: conference2.id, title: conference2.name),
+          ],
+        ),
+      ),
+    );
+
+    _filterSessionTime = _hotObservablesHolder.replayConnect(
+      Observable.just(
+        DropdownState(
+          value: SessionTime.notSpecified,
+          items: [
+            DropdownStateItem(value: SessionTime.notSpecified, title: "指定なし"),
+            DropdownStateItem(
+                value: SessionTime.within15Minutes, title: "15分以内"),
+            DropdownStateItem(
+                value: SessionTime.within30Minutes, title: "30分以内"),
+            DropdownStateItem(
+                value: SessionTime.within60Minutes, title: "60分以内"),
+          ],
+        ),
+      ),
+    );
+
     _sessions = _hotObservablesHolder.replayConnect(
       Observable.just(
         [
@@ -94,5 +175,9 @@ class DefaultVideoPageBloc implements VideoPageBloc {
 
   void dispose() {
     _hotObservablesHolder.dispose();
+    _expandFilterPanel.close();
+    _filterConferenceChanged.close();
+    _filterSessionTimeChanged.close();
+    _executeFilter.close();
   }
 }
