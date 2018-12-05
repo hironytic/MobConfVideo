@@ -27,7 +27,7 @@ import 'dart:async';
 
 import 'package:bloc_provider/bloc_provider.dart';
 import 'package:meta/meta.dart';
-import 'package:mob_conf_video/common/hot_observables_holder.dart';
+import 'package:mob_conf_video/common/subscription_holder.dart';
 import 'package:mob_conf_video/model/request.dart';
 import 'package:mob_conf_video/model/event.dart';
 import 'package:mob_conf_video/repository/event_repository.dart';
@@ -45,63 +45,87 @@ abstract class RequestPageBloc implements Bloc {
 }
 
 class DefaultRequestPageBloc implements RequestPageBloc {
-  Sink<String> get targetSelection => _targetSelection.sink;
+  // inputs
+  Sink<String> get targetSelection => _targetSelection;
 
+  // outputs
   Stream<Event> get currentTarget => _currentTarget;
-  List<Event> get availableTargets => _availableTargets;
+  List<Event> get availableTargets => _allEvents.value;
   Stream<Iterable<Request>> get requests => _requests;
 
-  final EventRepository eventRepository;
-  final RequestRepository requestRepository;
+  final SubscriptionHolder _subscriptions;
+  final PublishSubject<String> _targetSelection;
+  final Observable<Event> _currentTarget;
+  final ValueObservable<List<Event>> _allEvents;
+  final Observable<Iterable<Request>> _requests;
 
-  final _hotObservablesHolder = HotObservablesHolder();
-  final _targetSelection = PublishSubject<String>();
-  Observable<Event> _currentTarget;
-  List<Event> _availableTargets = [];
-  StreamSubscription<List<Event>> _allEventsSubscription;
-  Observable<Iterable<Request>> _requests;
+  DefaultRequestPageBloc._(
+    this._subscriptions,
+    this._targetSelection,
+    this._currentTarget,
+    this._allEvents,
+    this._requests,
+  );
 
-  DefaultRequestPageBloc({
-    @required this.eventRepository,
-    @required this.requestRepository,
+  factory DefaultRequestPageBloc({
+    @required EventRepository eventRepository,
+    @required RequestRepository requestRepository,
   }) {
-    final allEvents = Observable(eventRepository.getAllEventsStream())
-        .map ((iterable) => iterable.toList())
-        .shareReplay(maxSize: 1);
+    final subscriptions = SubscriptionHolder();
 
-    _allEventsSubscription = allEvents.listen((events) {
-      _availableTargets = events;
-    });
+    // ignore: close_sinks
+    final targetSelection = PublishSubject<String>();
+
+    final allEvents = Observable(eventRepository.getAllEventsStream())
+        .map((iterable) => iterable.toList())
+        .publishValue();
+    subscriptions.add(allEvents.connect());
 
     // The default selection is the request which is the first one
     // in the first all-events-list
     final targetSelectionWithDefault = Observable.concat([
-      allEvents.take(1).map((events) => (events.length > 0) ? events[0].id : null),
-      _targetSelection,
-    ]).distinct().shareReplay(maxSize: 1);
+      allEvents
+          .take(1)
+          .map((events) => (events.length > 0) ? events[0].id : null),
+      targetSelection,
+    ]).distinct().share();
 
-    final currentTarget = targetSelectionWithDefault.withLatestFrom(allEvents,
-        (eventId, List<Event> events) {
-      if (eventId == null) {
-        return null;
-      }
-      return events.firstWhere((event) => event.id == eventId, orElse: () => null);
-    });
-    _currentTarget = _hotObservablesHolder.replayConnect(currentTarget);
+    final currentTarget = targetSelectionWithDefault.withLatestFrom(
+      allEvents,
+      (eventId, List<Event> events) {
+        if (eventId == null) {
+          return null;
+        }
+        return events.firstWhere(
+          (event) => event.id == eventId,
+          orElse: () => null,
+        );
+      },
+    ).publishValue();
+    subscriptions.add(currentTarget.connect());
 
-    final requests = targetSelectionWithDefault.switchMap((eventId) {
-      if (eventId == null) {
-        return Observable<Iterable<Request>>.empty();
-      } else {
-        return Observable(requestRepository.getAllRequestsStream(eventId));
-      }
-    });
-    _requests = _hotObservablesHolder.replayConnect(requests);
+    final requests = targetSelectionWithDefault.switchMap(
+      (eventId) {
+        if (eventId == null) {
+          return Observable<Iterable<Request>>.empty();
+        } else {
+          return Observable(requestRepository.getAllRequestsStream(eventId));
+        }
+      },
+    ).publishValue();
+    subscriptions.add(requests.connect());
+
+    return DefaultRequestPageBloc._(
+      subscriptions,
+      targetSelection,
+      currentTarget,
+      allEvents,
+      requests,
+    );
   }
 
   void dispose() {
-    _hotObservablesHolder.dispose();
+    _subscriptions.dispose();
     _targetSelection.close();
-    _allEventsSubscription.cancel();
   }
 }

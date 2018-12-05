@@ -25,7 +25,7 @@
 
 import 'package:bloc_provider/bloc_provider.dart';
 import 'package:mob_conf_video/common/dropdown_state.dart';
-import 'package:mob_conf_video/common/hot_observables_holder.dart';
+import 'package:mob_conf_video/common/subscription_holder.dart';
 import 'package:mob_conf_video/model/conference.dart';
 import 'package:mob_conf_video/model/session.dart';
 import 'package:mob_conf_video/model/speaker.dart';
@@ -63,7 +63,7 @@ class DefaultVideoPageBloc implements VideoPageBloc {
   get filterSessionTime => _filterSessionTime;
   get sessions => _sessions;
 
-  final _hotObservablesHolder = HotObservablesHolder();
+  final _subscriptions = SubscriptionHolder();
   final _expandFilterPanel = PublishSubject<bool>();
   final _filterConferenceChanged = PublishSubject<String>();
   final _filterSessionTimeChanged = PublishSubject<SessionTime>();
@@ -77,7 +77,7 @@ class DefaultVideoPageBloc implements VideoPageBloc {
     var executeFilter = _executeFilter.shareReplay(maxSize: 1);
     var expandFilterPanel = _expandFilterPanel.shareReplay(maxSize: 1);
 
-    _isFilterPanelExpanded = _hotObservablesHolder.replayConnect(
+    _isFilterPanelExpanded = _subscriptions.replayConnect(
       Observable<bool>.merge([
         expandFilterPanel,
         executeFilter.map((_) => false), // also closes on executing the filter
@@ -95,7 +95,7 @@ class DefaultVideoPageBloc implements VideoPageBloc {
       starts: DateTime(2018, 2, 8, 10, 00),
     );
 
-    _filterConference = _hotObservablesHolder.replayConnect(
+    _filterConference = _subscriptions.replayConnect(
       Observable.just(
         DropdownState(
           value: conference1.id,
@@ -107,7 +107,7 @@ class DefaultVideoPageBloc implements VideoPageBloc {
       ),
     );
 
-    _filterSessionTime = _hotObservablesHolder.replayConnect(
+    _filterSessionTime = _subscriptions.replayConnect(
       Observable.just(
         DropdownState(
           value: SessionTime.notSpecified,
@@ -124,7 +124,7 @@ class DefaultVideoPageBloc implements VideoPageBloc {
       ),
     );
 
-    _sessions = _hotObservablesHolder.replayConnect(
+    _sessions = _subscriptions.replayConnect(
       Observable.just(
         [
           Session(
@@ -174,7 +174,7 @@ class DefaultVideoPageBloc implements VideoPageBloc {
   }
 
   void dispose() {
-    _hotObservablesHolder.dispose();
+    _subscriptions.dispose();
     _expandFilterPanel.close();
     _filterConferenceChanged.close();
     _filterSessionTimeChanged.close();

@@ -1,5 +1,5 @@
 //
-// hot_observables_holder.dart
+// subscription_holder.dart
 // mob_conf_video
 //
 // Copyright (c) 2018 Hironori Ichimiya <hiron@hironytic.com>
@@ -27,12 +27,16 @@ import 'dart:async';
 
 import 'package:rxdart/rxdart.dart';
 
-class HotObservablesHolder {
+class SubscriptionHolder {
   List<StreamSubscription<dynamic>> _subscriptions = new List();
+
+  void add(StreamSubscription<dynamic> subscription) {
+    _subscriptions.add(subscription);
+  }
 
   Observable<T> replayConnect<T>(Observable<T> source) {
     var result = source.publishReplay(maxSize: 1);
-    _subscriptions.add(result.connect());
+    add(result.connect());
     return result;
   }
 
