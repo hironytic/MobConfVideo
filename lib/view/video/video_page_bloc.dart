@@ -24,11 +24,15 @@
 //
 
 import 'package:bloc_provider/bloc_provider.dart';
+import 'package:flutter/widgets.dart';
+import 'package:tuple/tuple.dart';
 import 'package:mob_conf_video/common/dropdown_state.dart';
 import 'package:mob_conf_video/common/subscription_holder.dart';
 import 'package:mob_conf_video/model/conference.dart';
 import 'package:mob_conf_video/model/session.dart';
 import 'package:mob_conf_video/model/speaker.dart';
+import 'package:mob_conf_video/repository/conference_repository.dart';
+import 'package:mob_conf_video/repository/session_repository.dart';
 import 'package:rxdart/rxdart.dart';
 
 enum SessionTime {
@@ -43,8 +47,8 @@ class SessionItem {
   final String conferenceName;
 
   SessionItem({
-    this.session,
-    this.conferenceName,
+    @required this.session,
+    @required this.conferenceName,
   });
 }
 
@@ -81,8 +85,8 @@ class DefaultVideoPageBloc implements VideoPageBloc {
   final PublishSubject<SessionTime> _filterSessionTimeChanged;
   final PublishSubject<void> _executeFilter;
   final Observable<bool> _isFilterPanelExpanded;
-  final Stream<DropdownState<String>> _filterConference;
-  final Stream<DropdownState<SessionTime>> _filterSessionTime;
+  final Observable<DropdownState<String>> _filterConference;
+  final Observable<DropdownState<SessionTime>> _filterSessionTime;
   final Observable<Iterable<SessionItem>> _sessions;
 
   DefaultVideoPageBloc._(
@@ -97,7 +101,10 @@ class DefaultVideoPageBloc implements VideoPageBloc {
     this._sessions,
   );
 
-  factory DefaultVideoPageBloc() {
+  factory DefaultVideoPageBloc({
+    @required ConferenceRepository conferenceRepository,
+    @required SessionRepository sessionRepository,
+  }) {
     final subscriptions = SubscriptionHolder();
 
     // ignore: close_sinks
@@ -115,39 +122,60 @@ class DefaultVideoPageBloc implements VideoPageBloc {
     ]).startWith(false).publishValue();
     subscriptions.add(isFilterPanelExpanded.connect());
 
-    final conference1 = Conference(
-      id: "iOSDC2018",
-      name: "iOSDC Japan 2018",
-      starts: DateTime(2018, 8, 30, 18, 00),
-    );
-    final conference2 = Conference(
-      id: "DroidKaigi2018",
-      name: "DroidKaigi 2018",
-      starts: DateTime(2018, 2, 8, 10, 00),
-    );
+    final conferences =
+        Observable(conferenceRepository.getAllConferencesStream())
+            .map((confs) => confs.toList())
+            .share();
 
-    final filterConference = Observable.just(
-      DropdownState(
-        value: conference1.id,
-        items: [
-          DropdownStateItem(value: conference1.id, title: conference1.name),
-          DropdownStateItem(value: conference2.id, title: conference2.name),
-        ],
-      ),
-    ).publishValue();
+    final currentConferenceFilter = Observable.concat([
+      conferences
+          .take(1)
+          .map((confs) => (confs.length > 0) ? confs[0].id : null),
+      filterConferenceChanged,
+    ]).distinct().share();
+
+    final filterConference = Observable.combineLatest2(
+      currentConferenceFilter,
+      conferences,
+      (v1, v2) => Tuple2<String, List<Conference>>(v1, v2),
+    )
+        .map((value) {
+          return DropdownState<String>(
+            value: value.item1,
+            items: value.item2.map(
+              (conf) => DropdownStateItem<String>(
+                    value: conf.id,
+                    title: conf.name,
+                  ),
+            ),
+          );
+        })
+        .onErrorReturn(
+          DropdownState<String>(
+            value: "",
+            items: [DropdownStateItem<String>(value: "", title: "<<エラー>>")],
+          ),
+        )
+        .publishValue();
     subscriptions.add(filterConference.connect());
 
-    final filterSessionTime = Observable.just(
-      DropdownState(
-        value: SessionTime.notSpecified,
-        items: [
-          DropdownStateItem(value: SessionTime.notSpecified, title: "指定なし"),
-          DropdownStateItem(value: SessionTime.within15Minutes, title: "15分以内"),
-          DropdownStateItem(value: SessionTime.within30Minutes, title: "30分以内"),
-          DropdownStateItem(value: SessionTime.within60Minutes, title: "60分以内"),
-        ],
-      ),
-    ).publishValue();
+    final sessionTimeItems = [
+      DropdownStateItem(value: SessionTime.notSpecified, title: "指定なし"),
+      DropdownStateItem(value: SessionTime.within15Minutes, title: "15分以内"),
+      DropdownStateItem(value: SessionTime.within30Minutes, title: "30分以内"),
+      DropdownStateItem(value: SessionTime.within60Minutes, title: "60分以内"),
+    ];
+
+    final currentSessionTimeFilter =
+        filterSessionTimeChanged.distinct().share();
+
+    final filterSessionTime = currentSessionTimeFilter
+        .startWith(SessionTime.notSpecified)
+        .map((value) => DropdownState<SessionTime>(
+              value: value,
+              items: sessionTimeItems,
+            ))
+        .publishValue();
     subscriptions.add(filterSessionTime.connect());
 
     final sessions = Observable.just(

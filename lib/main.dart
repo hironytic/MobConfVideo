@@ -26,8 +26,10 @@
 import 'package:bloc_provider/bloc_provider.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:mob_conf_video/repository/conference_repository.dart';
 import 'package:mob_conf_video/repository/event_repository.dart';
 import 'package:mob_conf_video/repository/request_repository.dart';
+import 'package:mob_conf_video/repository/session_repository.dart';
 import 'package:mob_conf_video/view/favorite/favorite_page.dart';
 import 'package:mob_conf_video/view/request/request_page_bloc.dart';
 import 'package:mob_conf_video/view/request/request_page.dart';
@@ -46,14 +48,19 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     var eventRepository = DefaultEventRepository();
     var requestRepository = DefaultRequestRepository();
+    var conferenceRepository = DefaultConferenceRepository();
+    var sessionRepository = DefaultSessionRepository();
 
     return BlocProvider<RequestPageBloc>(
       creator: (context) => DefaultRequestPageBloc(
-        eventRepository: eventRepository,
-        requestRepository: requestRepository,
-      ),
+            eventRepository: eventRepository,
+            requestRepository: requestRepository,
+          ),
       child: BlocProvider<VideoPageBloc>(
-        creator: (context) => DefaultVideoPageBloc(),
+        creator: (context) => DefaultVideoPageBloc(
+              conferenceRepository: conferenceRepository,
+              sessionRepository: sessionRepository,
+            ),
         child: MaterialApp(
           title: 'MobConfVideo',
           theme: ThemeData(

@@ -44,6 +44,6 @@ class Conference {
       : this(
           id: id,
           name: map["name"],
-          starts: map["starts"],
+          starts: (map["starts"] as Timestamp).toDate(),
         );
 }
