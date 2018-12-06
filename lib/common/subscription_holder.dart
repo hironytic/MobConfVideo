@@ -25,19 +25,11 @@
 
 import 'dart:async';
 
-import 'package:rxdart/rxdart.dart';
-
 class SubscriptionHolder {
   List<StreamSubscription<dynamic>> _subscriptions = new List();
 
   void add(StreamSubscription<dynamic> subscription) {
     _subscriptions.add(subscription);
-  }
-
-  Observable<T> replayConnect<T>(Observable<T> source) {
-    var result = source.publishReplay(maxSize: 1);
-    add(result.connect());
-    return result;
   }
 
   void dispose() {
