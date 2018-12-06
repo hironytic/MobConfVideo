@@ -31,9 +31,10 @@ abstract class RequestRepository {
 }
 
 class DefaultRequestRepository implements RequestRepository {
+  @override
   Stream<Iterable<Request>> getAllRequestsStream(String eventId) {
-
-    var snapshots = Firestore.instance.collection("events")
+    var snapshots = Firestore.instance
+        .collection("events")
         .document(eventId)
         .collection("requests")
         .orderBy("requestedAt", descending: false)

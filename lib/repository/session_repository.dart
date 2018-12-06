@@ -1,5 +1,5 @@
 //
-// event_repository.dart
+// session_repository.dart
 // mob_conf_video
 //
 // Copyright (c) 2018 Hironori Ichimiya <hiron@hironytic.com>
@@ -23,23 +23,41 @@
 // THE SOFTWARE.
 //
 
-import 'package:mob_conf_video/model/event.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:meta/meta.dart';
+import 'package:mob_conf_video/model/session.dart';
 
-abstract class EventRepository {
-  Stream<Iterable<Event>> getAllEventsStream();
+class SessionFilter {
+  final String conferenceId;
+  final int withinMinutes;
+
+  SessionFilter({
+    @required this.conferenceId,
+    @required this.withinMinutes,
+  });
 }
 
-class DefaultEventRepository implements EventRepository {
+abstract class SessionRepository {
+  Stream<Iterable<Session>> getSessionsStream(SessionFilter filter);
+}
+
+class DefaultSessionRepository implements SessionRepository {
   @override
-  Stream<Iterable<Event>> getAllEventsStream() {
-    var snapshots = Firestore.instance
-        .collection("events")
-        .orderBy("starts", descending: true)
-        .snapshots();
+  Stream<Iterable<Session>> getSessionsStream(SessionFilter filter) {
+    var query = Firestore.instance
+        .collection("sessions")
+        .orderBy("requestedAt", descending: false);
+    if (filter.conferenceId != null) {
+      query = query.where("conferenceId", isEqualTo: filter.conferenceId);
+    }
+    if (filter.withinMinutes != null) {
+      query = query.where("minutes", isLessThanOrEqualTo: filter.withinMinutes);
+    }
+
+    var snapshots = query.snapshots();
     return snapshots.map((snapshot) {
       return snapshot.documents.map((document) {
-        return Event.fromSnapshot(document);
+        return Session.fromSnapshot(document);
       });
     });
   }

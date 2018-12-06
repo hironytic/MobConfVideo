@@ -1,5 +1,5 @@
 //
-// event_repository.dart
+// conference_repository.dart
 // mob_conf_video
 //
 // Copyright (c) 2018 Hironori Ichimiya <hiron@hironytic.com>
@@ -23,23 +23,23 @@
 // THE SOFTWARE.
 //
 
-import 'package:mob_conf_video/model/event.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:mob_conf_video/model/conference.dart';
 
-abstract class EventRepository {
-  Stream<Iterable<Event>> getAllEventsStream();
+abstract class ConferenceRepository {
+  Stream<Iterable<Conference>> getAllConferencesStream();
 }
 
-class DefaultEventRepository implements EventRepository {
+class DefaultConferenceRepository implements ConferenceRepository {
   @override
-  Stream<Iterable<Event>> getAllEventsStream() {
+  Stream<Iterable<Conference>> getAllConferencesStream() {
     var snapshots = Firestore.instance
-        .collection("events")
+        .collection("conferences")
         .orderBy("starts", descending: true)
         .snapshots();
     return snapshots.map((snapshot) {
       return snapshot.documents.map((document) {
-        return Event.fromSnapshot(document);
+        return Conference.fromSnapshot(document);
       });
     });
   }
