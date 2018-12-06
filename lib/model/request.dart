@@ -52,13 +52,13 @@ class Request {
 
   Request.fromMap(String id, Map<String, dynamic> map)
       : this(
-    id: id,
-    sessionId: map["sessionId"],
-    title: map["title"],
-    conference: map["conference"],
-    videoUrl: map["video"],
-    slideUrl: map["slide"],
-    memo: map["memo"],
-    isWatched: map["watched"],
-  );
+          id: id,
+          sessionId: map["sessionId"],
+          title: map["title"],
+          conference: map["conference"],
+          videoUrl: map["video"],
+          slideUrl: map["slide"],
+          memo: map["memo"],
+          isWatched: map["watched"],
+        );
 }

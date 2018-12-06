@@ -35,4 +35,11 @@ class Speaker {
   final String name;
   final String twitter;
   final String icon;
+
+  Speaker.fromMap(Map<String, dynamic> map)
+      : this(
+          name: map["name"],
+          twitter: map["twitter"],
+          icon: map["icon"],
+        );
 }

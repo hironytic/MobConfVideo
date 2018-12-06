@@ -23,6 +23,7 @@
 // THE SOFTWARE.
 //
 
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:meta/meta.dart';
 import 'package:mob_conf_video/model/speaker.dart';
 
@@ -30,7 +31,6 @@ class Session {
   Session({
     @required this.id,
     @required this.conferenceId,
-    @required this.conferenceName,
     @required this.title,
     @required this.description,
     @required this.starts,
@@ -42,7 +42,6 @@ class Session {
 
   final String id;
   final String conferenceId;
-  final String conferenceName;
   final String title;
   final String description;
   final DateTime starts;
@@ -50,4 +49,24 @@ class Session {
   final String slide;
   final String video;
   final List<Speaker> speakers;
+
+  Session.fromSnapshot(DocumentSnapshot snapshot)
+      : this.fromMap(snapshot.documentID, snapshot.data);
+
+  Session.fromMap(String id, Map<String, dynamic> map)
+      : this(
+          id: id,
+          conferenceId: map["conferenceId"],
+          title: map["title"],
+          description: map["description"],
+          starts: map["starts"],
+          minutes: map["minutes"],
+          slide: map["slide"],
+          video: map["video"],
+          speakers: _mapSpeakers(map["speakers"]),
+        );
+
+  static List<Speaker> _mapSpeakers(List<Map<String, dynamic>> speakers) {
+    return speakers.map((speakerMap) => Speaker.fromMap(speakerMap)).toList();
+  }
 }

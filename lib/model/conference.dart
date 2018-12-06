@@ -23,6 +23,7 @@
 // THE SOFTWARE.
 //
 
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:meta/meta.dart';
 
 class Conference {
@@ -35,4 +36,14 @@ class Conference {
   final String id;
   final String name;
   final DateTime starts;
+
+  Conference.fromSnapshot(DocumentSnapshot snapshot)
+      : this.fromMap(snapshot.documentID, snapshot.data);
+
+  Conference.fromMap(String id, Map<String, dynamic> map)
+      : this(
+          id: id,
+          name: map["name"],
+          starts: map["starts"],
+        );
 }

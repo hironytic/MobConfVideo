@@ -55,7 +55,7 @@ class VideoPage extends StatelessWidget {
           return Container();
         }
 
-        Iterable<Session> sessions = snapshot.data;
+        Iterable<SessionItem> sessions = snapshot.data;
         return ListView.builder(
           itemCount: sessions.length + 1,
           itemBuilder: (context, index) {
@@ -71,7 +71,7 @@ class VideoPage extends StatelessWidget {
     );
   }
 
-  Widget _buildSession(BuildContext context, Session session, int index) {
+  Widget _buildSession(BuildContext context, SessionItem item, int index) {
     final ThemeData themeData = Theme.of(context);
     final TextTheme textTheme = themeData.textTheme;
 
@@ -84,27 +84,27 @@ class VideoPage extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.stretch,
             mainAxisAlignment: MainAxisAlignment.start,
             children: <Widget>[
-              Text(session.title, style: textTheme.headline),
+              Text(item.session.title, style: textTheme.headline),
               DefaultTextStyle(
                 style: textTheme.body1.copyWith(color: Colors.black87),
                 softWrap: false,
                 overflow: TextOverflow.ellipsis,
                 maxLines: 3,
                 child: new Padding(
-                  child: new Text(session.description),
+                  child: new Text(item.session.description),
                   padding: const EdgeInsets.only(top: 12.0, bottom: 8.0),
                 ),
               ),
               Padding(
                 padding: const EdgeInsets.only(top: 8.0),
                 child: new Column(
-                  children: _buildSpeakers(context, session),
+                  children: _buildSpeakers(context, item.session),
                 ),
               ),
               Padding(
                 padding: const EdgeInsets.only(top: 8.0),
                 child: Text(
-                  session.conferenceName,
+                  item.conferenceName,
                   style: textTheme.body1.copyWith(color: Colors.black54),
                 ),
               ),
