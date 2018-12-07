@@ -51,6 +51,22 @@ class SessionItem {
   });
 }
 
+abstract class SessionListState {}
+
+class SessionListInitial implements SessionListState {}
+
+class SessionListLoading implements SessionListState {}
+
+class SessionListLoaded implements SessionListState {
+  Iterable<SessionItem> sessions;
+  SessionListLoaded(this.sessions);
+}
+
+class SessionListError implements SessionListState {
+  String message;
+  SessionListError(this.message);
+}
+
 abstract class VideoPageBloc implements Bloc {
   // inputs
   Sink<bool> get expandFilterPanel;
@@ -62,7 +78,7 @@ abstract class VideoPageBloc implements Bloc {
   Stream<bool> get isFilterPanelExpanded;
   Stream<DropdownState<String>> get filterConference;
   Stream<DropdownState<SessionTime>> get filterSessionTime;
-  Stream<Iterable<SessionItem>> get sessions;
+  Stream<SessionListState> get sessionListState;
 }
 
 class DefaultVideoPageBloc implements VideoPageBloc {
@@ -76,7 +92,7 @@ class DefaultVideoPageBloc implements VideoPageBloc {
   get isFilterPanelExpanded => _isFilterPanelExpanded;
   get filterConference => _filterConference;
   get filterSessionTime => _filterSessionTime;
-  get sessions => _sessions;
+  get sessionListState => _sessionListState;
 
   final SubscriptionHolder _subscriptions;
   final PublishSubject<bool> _expandFilterPanel;
@@ -86,7 +102,7 @@ class DefaultVideoPageBloc implements VideoPageBloc {
   final Observable<bool> _isFilterPanelExpanded;
   final Observable<DropdownState<String>> _filterConference;
   final Observable<DropdownState<SessionTime>> _filterSessionTime;
-  final Observable<Iterable<SessionItem>> _sessions;
+  final Observable<SessionListState> _sessionListState;
 
   DefaultVideoPageBloc._(
     this._subscriptions,
@@ -97,7 +113,7 @@ class DefaultVideoPageBloc implements VideoPageBloc {
     this._isFilterPanelExpanded,
     this._filterConference,
     this._filterSessionTime,
-    this._sessions,
+    this._sessionListState,
   );
 
   factory DefaultVideoPageBloc({
@@ -127,9 +143,8 @@ class DefaultVideoPageBloc implements VideoPageBloc {
             .share();
 
     final currentConferenceFilter = Observable.concat([
-      conferences
-          .take(1)
-          .map((conferences) => (conferences.length > 0) ? conferences[0].id : null),
+      conferences.take(1).map(
+          (conferences) => (conferences.length > 0) ? conferences[0].id : null),
       filterConferenceChanged,
     ]).distinct().share();
 
@@ -205,14 +220,21 @@ class DefaultVideoPageBloc implements VideoPageBloc {
           withinMinutes: _withinMinutesFromSessionTime(v.item2));
     });
 
-    final sessions = sessionFilter
-        .switchMap(
-            (filter) => Observable(sessionRepository.getSessionsStream(filter)))
-        .map((sessions) => sessions.map(
-            (session) => SessionItem(session: session, conferenceName: "")))
-        .startWith([])
+    SessionItem convertSession(Session session) =>
+        SessionItem(session: session, conferenceName: "");
+
+    Observable<SessionListState> loadSessions(SessionFilter filter) =>
+        Observable(sessionRepository.getSessionsStream(filter))
+            .map<SessionListState>(
+                (sessions) => SessionListLoaded(sessions.map(convertSession)))
+            .startWith(SessionListLoading());
+
+    final sessionListState = sessionFilter
+        .switchMap(loadSessions)
+        .startWith(SessionListInitial())
+        .onErrorReturnWith((error) => SessionListError(error.toString()))
         .publishValue();
-    subscriptions.add(sessions.connect());
+    subscriptions.add(sessionListState.connect());
 
     return DefaultVideoPageBloc._(
       subscriptions,
@@ -223,7 +245,7 @@ class DefaultVideoPageBloc implements VideoPageBloc {
       isFilterPanelExpanded,
       filterConference,
       filterSessionTime,
-      sessions,
+      sessionListState,
     );
   }
 

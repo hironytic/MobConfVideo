@@ -49,20 +49,94 @@ class VideoPage extends StatelessWidget {
     final VideoPageBloc videoBloc = BlocProvider.of(context);
 
     return StreamBuilder(
-      stream: videoBloc.sessions,
+      stream: videoBloc.sessionListState,
+      initialData: SessionListInitial(),
       builder: (context, snapshot) {
-        Iterable<SessionItem> sessions = snapshot.data;
-        return ListView.builder(
-          itemCount: (sessions?.length ?? 0) + 1,
-          itemBuilder: (context, index) {
-            if (index == 0) {
-              return _buildFilterPanel(context);
-            } else {
-              return _buildSession(
-                  context, sessions.elementAt(index - 1), index - 1);
-            }
-          },
+        SessionListState sessionListState = snapshot.data;
+        if (sessionListState is SessionListError) {
+          return _buildErrorBody(context, sessionListState);
+        } else if (sessionListState is SessionListLoading) {
+          return _buildLoadingBody(context);
+        } else if (sessionListState is SessionListLoaded) {
+          return _buildLoadedBody(context, sessionListState);
+        } else {
+          return _buildListView(context, 0, null);
+        }
+      },
+    );
+  }
+
+  Widget _buildLoadingBody(BuildContext context) {
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.only(top: 64.0),
+        child: CircularProgressIndicator(),
+      ),
+    );
+  }
+
+  Widget _buildLoadedBody(BuildContext context, SessionListLoaded state) {
+    final ThemeData themeData = Theme.of(context);
+    final TextTheme textTheme = themeData.textTheme;
+
+    Iterable<SessionItem> sessions = state.sessions;
+    if (sessions.length == 0) {
+      return _buildListView(context, 1, (_) {
+        return Center(
+          child: Padding(
+            padding: const EdgeInsets.only(top: 64.0),
+            child: Text(
+              "動画セッションが見つかりません",
+              style: textTheme.body1.copyWith(color: Colors.black54),
+            ),
+          ),
         );
+      });
+    } else {
+      return _buildListView(context, sessions.length, (index) {
+        return _buildSession(context, sessions.elementAt(index), index);
+      });
+    }
+  }
+
+  Widget _buildErrorBody(BuildContext context, SessionListError state) {
+    final ThemeData themeData = Theme.of(context);
+    final TextTheme textTheme = themeData.textTheme;
+
+    return _buildListView(context, 1, (_) {
+      return Center(
+        child: Padding(
+          padding: const EdgeInsets.only(top: 64.0),
+          child: Column(
+            children: <Widget>[
+              Text(
+                "エラーが発生しました",
+                style: textTheme.body1.copyWith(color: Colors.black54),
+              ),
+              Padding(
+                padding: const EdgeInsets.only(top: 8.0),
+                child: Text(
+                  state.message,
+                  style: textTheme.body1.copyWith(color: Colors.black26),
+                ),
+              ),
+            ],
+          ),
+        ),
+      );
+    });
+  }
+
+  Widget _buildListView(
+      BuildContext context, int itemCount, Widget buildAt(int index)) {
+    return ListView.builder(
+      itemCount: itemCount + 1,
+      itemBuilder: (context, index) {
+        if (index == 0) {
+          return _buildFilterPanel(context);
+        } else {
+          return buildAt(index - 1);
+        }
       },
     );
   }
@@ -160,7 +234,7 @@ class VideoPage extends StatelessWidget {
                         child: Container(
                           margin: const EdgeInsets.only(left: 24.0),
                           child: Text(
-                            "フィルタ",
+                            "検索条件",
                             style: Theme.of(context).textTheme.body2,
                           ),
                         ),
@@ -235,7 +309,7 @@ class VideoPage extends StatelessWidget {
             child: FlatButton(
               onPressed: () => videoBloc.executeFilter.add(null),
               textTheme: ButtonTextTheme.accent,
-              child: const Text('実行'),
+              child: const Text('検索'),
             ),
           ),
         ],
