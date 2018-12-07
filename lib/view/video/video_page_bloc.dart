@@ -140,13 +140,13 @@ class DefaultVideoPageBloc implements VideoPageBloc {
     final conferences =
         Observable(conferenceRepository.getAllConferencesStream())
             .map((conferences) => conferences.toList())
-            .share();
+            .shareValue();
 
     final currentConferenceFilter = Observable.concat([
       conferences.take(1).map(
           (conferences) => (conferences.length > 0) ? conferences[0].id : null),
       filterConferenceChanged,
-    ]).distinct().share();
+    ]).distinct().shareValue();
 
     final filterConference = Observable.combineLatest2(
       currentConferenceFilter,
@@ -183,7 +183,7 @@ class DefaultVideoPageBloc implements VideoPageBloc {
     final currentSessionTimeFilter = filterSessionTimeChanged
         .startWith(SessionTime.notSpecified)
         .distinct()
-        .share();
+        .shareValue();
 
     final filterSessionTime = currentSessionTimeFilter
         .map((value) => DropdownState<SessionTime>(
@@ -220,14 +220,37 @@ class DefaultVideoPageBloc implements VideoPageBloc {
           withinMinutes: _withinMinutesFromSessionTime(v.item2));
     });
 
-    SessionItem convertSession(Session session) =>
-        SessionItem(session: session, conferenceName: "");
+    convertSession(Map<String, String> conferenceNameMap) {
+      return (Session session) {
+        return SessionItem(
+          session: session,
+          conferenceName: conferenceNameMap[session.conferenceId],
+        );
+      };
+    }
 
-    Observable<SessionListState> loadSessions(SessionFilter filter) =>
-        Observable(sessionRepository.getSessionsStream(filter))
-            .map<SessionListState>(
-                (sessions) => SessionListLoaded(sessions.map(convertSession)))
-            .startWith(SessionListLoading());
+    Map<String, String> makeConferenceNameMap(List<Conference> conferences) {
+      return conferences.fold(
+        Map<String, String>(),
+        (map, conference) {
+          map[conference.id] = conference.name;
+          return map;
+        },
+      );
+    }
+
+    Observable<SessionListState> loadSessions(SessionFilter filter) {
+      return Observable.combineLatest2(
+        Observable(sessionRepository.getSessionsStream(filter)),
+        conferences,
+        (sessions, conferences) =>
+            Tuple2<Iterable<Session>, Map<String, String>>(
+                sessions, makeConferenceNameMap(conferences)),
+      )
+          .map<SessionListState>((tuple) =>
+              SessionListLoaded(tuple.item1.map(convertSession(tuple.item2))))
+          .startWith(SessionListLoading());
+    }
 
     final sessionListState = sessionFilter
         .switchMap(loadSessions)
