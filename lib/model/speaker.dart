@@ -36,7 +36,7 @@ class Speaker {
   final String twitter;
   final String icon;
 
-  Speaker.fromMap(Map<String, dynamic> map)
+  Speaker.fromMap(Map<dynamic, dynamic> map)
       : this(
           name: map["name"],
           twitter: map["twitter"],

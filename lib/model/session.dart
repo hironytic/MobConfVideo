@@ -59,14 +59,16 @@ class Session {
           conferenceId: map["conferenceId"],
           title: map["title"],
           description: map["description"],
-          starts: map["starts"],
+          starts: (map["starts"] as Timestamp).toDate(),
           minutes: map["minutes"],
           slide: map["slide"],
           video: map["video"],
           speakers: _mapSpeakers(map["speakers"]),
         );
 
-  static List<Speaker> _mapSpeakers(List<Map<String, dynamic>> speakers) {
-    return speakers.map((speakerMap) => Speaker.fromMap(speakerMap)).toList();
+  static List<Speaker> _mapSpeakers(List speakers) {
+    return speakers
+        .map((speaker) => Speaker.fromMap(speaker as Map<dynamic, dynamic>))
+        .toList();
   }
 }

@@ -44,15 +44,16 @@ abstract class SessionRepository {
 class DefaultSessionRepository implements SessionRepository {
   @override
   Stream<Iterable<Session>> getSessionsStream(SessionFilter filter) {
-    var query = Firestore.instance
-        .collection("sessions")
-        .orderBy("requestedAt", descending: false);
+    Query query = Firestore.instance
+        .collection("sessions");
     if (filter.conferenceId != null) {
       query = query.where("conferenceId", isEqualTo: filter.conferenceId);
     }
     if (filter.withinMinutes != null) {
       query = query.where("minutes", isLessThanOrEqualTo: filter.withinMinutes);
+      query = query.orderBy("minutes", descending: true);
     }
+    query = query.orderBy("starts", descending: false);
 
     var snapshots = query.snapshots();
     return snapshots.map((snapshot) {
