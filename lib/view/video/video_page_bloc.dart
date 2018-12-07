@@ -115,7 +115,7 @@ class DefaultVideoPageBloc implements VideoPageBloc {
     // ignore: close_sinks
     final executeFilter = PublishSubject<void>();
 
-    final isFilterPanelExpanded = Observable<bool>.merge([
+    final isFilterPanelExpanded = Observable.merge([
       expandFilterPanel,
       executeFilter.map((_) => false), // also closes on executing the filter
     ]).startWith(false).publishValue();
@@ -123,7 +123,7 @@ class DefaultVideoPageBloc implements VideoPageBloc {
 
     final conferences =
         Observable(conferenceRepository.getAllConferencesStream())
-            .map((confs) => confs.toList())
+            .map((conferences) => conferences.toList())
             .share();
 
     final currentConferenceFilter = Observable.concat([
@@ -187,8 +187,7 @@ class DefaultVideoPageBloc implements VideoPageBloc {
         .publishValue();
     subscriptions.add(filterSessionTime.connect());
 
-    final Observable<Tuple2<String, SessionTime>> currentFilters =
-        Observable.combineLatest2(
+    final currentFilters = Observable.combineLatest2(
       currentConferenceFilter,
       currentSessionTimeFilter,
       (v1, v2) {
