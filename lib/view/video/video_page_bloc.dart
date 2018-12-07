@@ -118,7 +118,7 @@ class DefaultVideoPageBloc implements VideoPageBloc {
     final isFilterPanelExpanded = Observable.merge([
       expandFilterPanel,
       executeFilter.map((_) => false), // also closes on executing the filter
-    ]).startWith(false).publishValue();
+    ]).startWith(true).publishValue();
     subscriptions.add(isFilterPanelExpanded.connect());
 
     final conferences =
@@ -129,7 +129,7 @@ class DefaultVideoPageBloc implements VideoPageBloc {
     final currentConferenceFilter = Observable.concat([
       conferences
           .take(1)
-          .map((confs) => (confs.length > 0) ? confs[0].id : null),
+          .map((conferences) => (conferences.length > 0) ? conferences[0].id : null),
       filterConferenceChanged,
     ]).distinct().share();
 
@@ -196,8 +196,6 @@ class DefaultVideoPageBloc implements VideoPageBloc {
     );
 
     final sessionFilter = executeFilter
-        .startWith(null)
-        .delay(Duration(seconds: 1))
         .withLatestFrom<Tuple2<String, SessionTime>,
                 Tuple2<String, SessionTime>>(
             currentFilters, (void e, Tuple2<String, SessionTime> v) => v)
@@ -210,10 +208,10 @@ class DefaultVideoPageBloc implements VideoPageBloc {
     final sessions = sessionFilter
         .switchMap(
             (filter) => Observable(sessionRepository.getSessionsStream(filter)))
-        .map((sessions) {
-      return sessions
-          .map((session) => SessionItem(session: session, conferenceName: ""));
-    }).publishValue();
+        .map((sessions) => sessions.map(
+            (session) => SessionItem(session: session, conferenceName: "")))
+        .startWith([])
+        .publishValue();
     subscriptions.add(sessions.connect());
 
     return DefaultVideoPageBloc._(

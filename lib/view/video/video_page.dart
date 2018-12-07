@@ -51,13 +51,9 @@ class VideoPage extends StatelessWidget {
     return StreamBuilder(
       stream: videoBloc.sessions,
       builder: (context, snapshot) {
-        if (snapshot.data == null) {
-          return Container();
-        }
-
         Iterable<SessionItem> sessions = snapshot.data;
         return ListView.builder(
-          itemCount: sessions.length + 1,
+          itemCount: (sessions?.length ?? 0) + 1,
           itemBuilder: (context, index) {
             if (index == 0) {
               return _buildFilterPanel(context);
