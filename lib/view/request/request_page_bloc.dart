@@ -88,7 +88,7 @@ class DefaultRequestPageBloc implements RequestPageBloc {
           .take(1)
           .map((events) => (events.length > 0) ? events[0].id : null),
       targetSelection,
-    ]).distinct().share();
+    ]).distinct().shareValue();
 
     final currentTarget = targetSelectionWithDefault.withLatestFrom(
       allEvents,
