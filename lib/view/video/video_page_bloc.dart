@@ -25,6 +25,7 @@
 
 import 'package:bloc_provider/bloc_provider.dart';
 import 'package:flutter/widgets.dart';
+import 'package:mob_conf_video/RepositoryProvider.dart';
 import 'package:tuple/tuple.dart';
 import 'package:mob_conf_video/common/dropdown_state.dart';
 import 'package:mob_conf_video/common/subscription_holder.dart';
@@ -319,4 +320,19 @@ class DefaultVideoPageBloc implements VideoPageBloc {
     _filterSessionTimeChanged.close();
     _executeFilter.close();
   }
+}
+
+class DefaultVideoPageBlocProvider extends BlocProvider<VideoPageBloc> {
+  DefaultVideoPageBlocProvider({
+    @required Widget child,
+  }) : super(
+          child: child,
+          creator: (context) {
+            final provider = RepositoryProvider.of(context);
+            return DefaultVideoPageBloc(
+              sessionRepository: provider.sessionRepository,
+              conferenceRepository: provider.conferenceRepository,
+            );
+          },
+        );
 }

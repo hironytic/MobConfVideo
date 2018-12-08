@@ -23,9 +23,9 @@
 // THE SOFTWARE.
 //
 
-import 'package:bloc_provider/bloc_provider.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:mob_conf_video/RepositoryProvider.dart';
 import 'package:mob_conf_video/repository/conference_repository.dart';
 import 'package:mob_conf_video/repository/event_repository.dart';
 import 'package:mob_conf_video/repository/request_repository.dart';
@@ -51,22 +51,20 @@ class MyApp extends StatelessWidget {
     var conferenceRepository = DefaultConferenceRepository();
     var sessionRepository = DefaultSessionRepository();
 
-    return BlocProvider<RequestPageBloc>(
-      creator: (context) => DefaultRequestPageBloc(
-            eventRepository: eventRepository,
-            requestRepository: requestRepository,
-          ),
-      child: BlocProvider<VideoPageBloc>(
-        creator: (context) => DefaultVideoPageBloc(
-              conferenceRepository: conferenceRepository,
-              sessionRepository: sessionRepository,
+    return RepositoryProvider(
+      eventRepository: eventRepository,
+      requestRepository: requestRepository,
+      conferenceRepository: conferenceRepository,
+      sessionRepository: sessionRepository,
+      child: DefaultRequestPageBlocProvider(
+        child: DefaultVideoPageBlocProvider(
+          child: MaterialApp(
+            title: 'MobConfVideo',
+            theme: ThemeData(
+              primarySwatch: Colors.blue,
             ),
-        child: MaterialApp(
-          title: 'MobConfVideo',
-          theme: ThemeData(
-            primarySwatch: Colors.blue,
+            home: MyHomePage(),
           ),
-          home: MyHomePage(),
         ),
       ),
     );

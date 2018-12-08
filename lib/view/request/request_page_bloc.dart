@@ -26,7 +26,9 @@
 import 'dart:async';
 
 import 'package:bloc_provider/bloc_provider.dart';
+import 'package:flutter/widgets.dart';
 import 'package:meta/meta.dart';
+import 'package:mob_conf_video/RepositoryProvider.dart';
 import 'package:mob_conf_video/common/subscription_holder.dart';
 import 'package:mob_conf_video/model/request.dart';
 import 'package:mob_conf_video/model/event.dart';
@@ -128,4 +130,19 @@ class DefaultRequestPageBloc implements RequestPageBloc {
     _subscriptions.dispose();
     _targetSelection.close();
   }
+}
+
+class DefaultRequestPageBlocProvider extends BlocProvider<RequestPageBloc> {
+  DefaultRequestPageBlocProvider({
+    @required Widget child,
+  }) : super(
+    child: child,
+    creator: (context) {
+      final provider = RepositoryProvider.of(context);
+      return DefaultRequestPageBloc(
+        eventRepository: provider.eventRepository,
+        requestRepository: provider.requestRepository,
+      );
+    },
+  );
 }
