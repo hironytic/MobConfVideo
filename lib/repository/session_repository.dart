@@ -29,11 +29,11 @@ import 'package:mob_conf_video/model/session.dart';
 
 class SessionFilter {
   final String conferenceId;
-  final int withinMinutes;
+  final int minutes;
 
   SessionFilter({
     @required this.conferenceId,
-    @required this.withinMinutes,
+    @required this.minutes,
   });
 }
 
@@ -49,9 +49,8 @@ class DefaultSessionRepository implements SessionRepository {
     if (filter.conferenceId != null) {
       query = query.where("conferenceId", isEqualTo: filter.conferenceId);
     }
-    if (filter.withinMinutes != null) {
-      query = query.where("minutes", isLessThanOrEqualTo: filter.withinMinutes);
-      query = query.orderBy("minutes", descending: true);
+    if (filter.minutes != null) {
+      query = query.where("minutes", isEqualTo: filter.minutes);
     }
     query = query.orderBy("starts", descending: false);
 

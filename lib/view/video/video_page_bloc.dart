@@ -36,9 +36,10 @@ import 'package:rxdart/rxdart.dart';
 
 enum SessionTime {
   notSpecified,
-  within15Minutes,
-  within30Minutes,
-  within60Minutes,
+  fiveMinutes,
+  fifteenMinutes,
+  thirtyMinutes,
+  fiftyMinutes,
 }
 
 class SessionItem {
@@ -142,11 +143,8 @@ class DefaultVideoPageBloc implements VideoPageBloc {
             .map((conferences) => conferences.toList())
             .shareValue();
 
-    final currentConferenceFilter = Observable.concat([
-      conferences.take(1).map(
-          (conferences) => (conferences.length > 0) ? conferences[0].id : null),
-      filterConferenceChanged,
-    ]).distinct().shareValue();
+    final currentConferenceFilter =
+        filterConferenceChanged.startWith("").distinct().shareValue();
 
     final filterConference = Observable.combineLatest2(
       currentConferenceFilter,
@@ -156,11 +154,13 @@ class DefaultVideoPageBloc implements VideoPageBloc {
         .map((value) {
           return DropdownState<String>(
             value: value.item1,
-            items: value.item2.map(
-              (conf) => DropdownStateItem<String>(
-                    value: conf.id,
-                    title: conf.name,
-                  ),
+            items: _appendNotSpecified(
+              value.item2.map(
+                (conf) => DropdownStateItem<String>(
+                      value: conf.id,
+                      title: conf.name,
+                    ),
+              ),
             ),
           );
         })
@@ -175,9 +175,10 @@ class DefaultVideoPageBloc implements VideoPageBloc {
 
     final sessionTimeItems = [
       DropdownStateItem(value: SessionTime.notSpecified, title: "指定なし"),
-      DropdownStateItem(value: SessionTime.within15Minutes, title: "15分以内"),
-      DropdownStateItem(value: SessionTime.within30Minutes, title: "30分以内"),
-      DropdownStateItem(value: SessionTime.within60Minutes, title: "60分以内"),
+      DropdownStateItem(value: SessionTime.fiveMinutes, title: "5分"),
+      DropdownStateItem(value: SessionTime.fifteenMinutes, title: "15分"),
+      DropdownStateItem(value: SessionTime.thirtyMinutes, title: "30分"),
+      DropdownStateItem(value: SessionTime.fiftyMinutes, title: "50分"),
     ];
 
     final currentSessionTimeFilter = filterSessionTimeChanged
@@ -216,8 +217,9 @@ class DefaultVideoPageBloc implements VideoPageBloc {
             currentFilters, (void e, Tuple2<String, SessionTime> v) => v)
         .map((v) {
       return SessionFilter(
-          conferenceId: v.item1,
-          withinMinutes: _withinMinutesFromSessionTime(v.item2));
+        conferenceId: _getConferenceId(v.item1),
+        minutes: _getMinutesFromSessionTime(v.item2),
+      );
     });
 
     convertSession(Map<String, String> conferenceNameMap) {
@@ -272,23 +274,42 @@ class DefaultVideoPageBloc implements VideoPageBloc {
     );
   }
 
-  static int _withinMinutesFromSessionTime(SessionTime sessionTime) {
+  static int _getMinutesFromSessionTime(SessionTime sessionTime) {
     int withinMinutes;
     switch (sessionTime) {
       case SessionTime.notSpecified:
         withinMinutes = null;
         break;
-      case SessionTime.within15Minutes:
+      case SessionTime.fiveMinutes:
+        withinMinutes = 5;
+        break;
+      case SessionTime.fifteenMinutes:
         withinMinutes = 15;
         break;
-      case SessionTime.within30Minutes:
+      case SessionTime.thirtyMinutes:
         withinMinutes = 30;
         break;
-      case SessionTime.within60Minutes:
-        withinMinutes = 60;
+      case SessionTime.fiftyMinutes:
+        withinMinutes = 50;
         break;
     }
     return withinMinutes;
+  }
+
+  static String _getConferenceId(String conferenceId) {
+    if (conferenceId == null || conferenceId.isEmpty) {
+      return null;
+    } else {
+      return conferenceId;
+    }
+  }
+
+  static Iterable<DropdownStateItem<String>> _appendNotSpecified(
+      Iterable<DropdownStateItem<String>> iterable) {
+    return [
+      [DropdownStateItem<String>(value: "", title: "指定なし")],
+      iterable,
+    ].expand((x) => x);
   }
 
   void dispose() {
