@@ -1,5 +1,5 @@
 //
-// request_page_bloc.dart
+// request_tab_bloc.dart
 // mob_conf_video
 //
 // Copyright (c) 2018 Hironori Ichimiya <hiron@hironytic.com>
@@ -23,69 +23,86 @@
 // THE SOFTWARE.
 //
 
-import 'dart:async';
-
 import 'package:bloc_provider/bloc_provider.dart';
 import 'package:flutter/widgets.dart';
 import 'package:meta/meta.dart';
 import 'package:mob_conf_video/RepositoryProvider.dart';
 import 'package:mob_conf_video/common/subscription_holder.dart';
-import 'package:mob_conf_video/model/event.dart';
-import 'package:mob_conf_video/repository/event_repository.dart';
+import 'package:mob_conf_video/model/request.dart';
+import 'package:mob_conf_video/repository/request_repository.dart';
 import 'package:rxdart/rxdart.dart';
 
-abstract class RequestPageBloc implements Bloc {
-  // inputs
+abstract class RequestListState {}
 
-  // outputs
-  Stream<Iterable<Event>> get allEvents;
+class RequestListLoading implements RequestListState {}
+
+class RequestListLoaded implements RequestListState {
+  Iterable<Request> requests;
+  RequestListLoaded(this.requests);
 }
 
-class DefaultRequestPageBloc implements RequestPageBloc {
+class RequestListError implements RequestListState {
+  String message;
+  RequestListError(this.message);
+}
+
+abstract class RequestTabBloc implements Bloc {
   // inputs
 
   // outputs
-  get allEvents => _allEvents;
+  Stream<RequestListState> get requestListState;
+}
+
+class DefaultRequestTabBloc implements RequestTabBloc {
+  @override
+  get requestListState => _requestListState;
 
   final SubscriptionHolder _subscriptions;
-  final Observable<Iterable<Event>> _allEvents;
+  final Observable<RequestListState> _requestListState;
 
-  DefaultRequestPageBloc._(
+  DefaultRequestTabBloc._(
     this._subscriptions,
-    this._allEvents,
+    this._requestListState,
   );
 
-  factory DefaultRequestPageBloc({
-    @required EventRepository eventRepository,
+  factory DefaultRequestTabBloc({
+    @required RequestRepository requestRepository,
+    @required String eventId,
   }) {
     final subscriptions = SubscriptionHolder();
 
-    final allEvents = Observable(eventRepository.getAllEventsStream())
-        .map((iterable) => iterable.toList())
-        .publishValue();
-    subscriptions.add(allEvents.connect());
+    final requestListState =
+        Observable(requestRepository.getAllRequestsStream(eventId))
+            .map<RequestListState>((requests) => RequestListLoaded(requests))
+            .startWith(RequestListLoading())
+            .onErrorReturnWith((error) => RequestListError(error.toString()))
+            .publishValue();
+    subscriptions.add(requestListState.connect());
 
-    return DefaultRequestPageBloc._(
+    return DefaultRequestTabBloc._(
       subscriptions,
-      allEvents,
+      requestListState,
     );
   }
 
+  @override
   void dispose() {
     _subscriptions.dispose();
   }
 }
 
-class DefaultRequestPageBlocProvider extends BlocProvider<RequestPageBloc> {
-  DefaultRequestPageBlocProvider({
+class DefaultRequestTabBlocProvider extends BlocProvider<RequestTabBloc> {
+  DefaultRequestTabBlocProvider({
+    @required String eventId,
     @required Widget child,
   }) : super(
-          child: child,
-          creator: (context) {
-            final provider = RepositoryProvider.of(context);
-            return DefaultRequestPageBloc(
-              eventRepository: provider.eventRepository,
-            );
-          },
-        );
+    child: child,
+    creator: (context) {
+      final provider = RepositoryProvider.of(context);
+      return DefaultRequestTabBloc(
+        requestRepository: provider.requestRepository,
+        eventId: eventId,
+      );
+    },
+  );
 }

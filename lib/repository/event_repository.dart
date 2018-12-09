@@ -35,7 +35,7 @@ class DefaultEventRepository implements EventRepository {
   Stream<Iterable<Event>> getAllEventsStream() {
     var snapshots = Firestore.instance
         .collection("events")
-        .orderBy("starts", descending: true)
+        .orderBy("starts", descending: false)
         .snapshots();
     return snapshots.map((snapshot) {
       return snapshot.documents.map((document) {

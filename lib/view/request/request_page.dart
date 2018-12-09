@@ -23,91 +23,107 @@
 // THE SOFTWARE.
 //
 
+import 'dart:async';
+import 'dart:math';
+
 import 'package:bloc_provider/bloc_provider.dart';
 import 'package:flutter/material.dart';
-import 'package:mob_conf_video/model/request.dart';
 import 'package:mob_conf_video/model/event.dart';
 import 'package:mob_conf_video/view/request/request_page_bloc.dart';
+import 'package:mob_conf_video/view/request/request_tab.dart';
+import 'package:mob_conf_video/view/request/request_tab_bloc.dart';
 
-class RequestPage extends StatelessWidget {
+class RequestPage extends StatefulWidget {
   RequestPage({Key key, this.bottomNavigationBar}) : super(key: key);
 
   final Widget bottomNavigationBar;
 
   @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: _buildAppBar(context),
-      body: _buildBody(context),
-      bottomNavigationBar: bottomNavigationBar,
-    );
+  _RequestPageState createState() => _RequestPageState();
+}
+
+class _RequestPageState extends State<RequestPage>
+    with TickerProviderStateMixin {
+  List<Event> _allEvents;
+  TabController _tabController;
+  List<TabController> _oldTabControllers = [];
+  StreamSubscription<Iterable<Event>> _allEventsSubscription;
+
+  @override
+  void initState() {
+    super.initState();
+
+    final RequestPageBloc requestBloc = BlocProvider.of(context);
+    _allEventsSubscription = requestBloc.allEvents.listen(onAllEventsChanged);
   }
 
-  Widget _buildAppBar(BuildContext context) {
-    final RequestPageBloc requestBloc = BlocProvider.of(context);
-    Color downArrowColor;
-    if (Theme.of(context).primaryColorBrightness == Brightness.light) {
-      downArrowColor = Colors.grey.shade700;
+  @override
+  void dispose() {
+    _allEventsSubscription?.cancel();
+    _allEventsSubscription = null;
+
+    super.dispose();
+  }
+
+  void onAllEventsChanged(Iterable<Event> allEvents) {
+    setState(() {
+      _allEvents = allEvents.toList();
+      int initialIndex = min(
+        _tabController?.index ?? _allEvents.length - 1,
+        _allEvents.length - 1,
+      );
+      if (_tabController != null) {
+        _oldTabControllers.add(_tabController);
+      }
+      _tabController = TabController(
+        initialIndex: initialIndex,
+        length: _allEvents.length,
+        vsync: this,
+      );
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    Widget bottom;
+    Widget body;
+    if (_tabController != null) {
+      bottom = TabBar(
+        controller: _tabController,
+        isScrollable: true,
+        tabs: _allEvents.map((event) => Tab(text: event.name)).toList(),
+      );
+      body = TabBarView(
+        controller: _tabController,
+        children: _allEvents.map((event) => _buildTab(event.id)).toList(),
+      );
     } else {
-      downArrowColor = Colors.white70;
+      bottom = null;
+      body = Container();
     }
 
-    return AppBar(
-      title: PopupMenuButton(
-        itemBuilder: (context) {
-          return requestBloc.availableTargets
-              .map((target) =>
-              PopupMenuItem(value: target.id, child: Text(target.name)))
-              .toList();
-        },
-        onSelected: (value) => requestBloc.targetSelection.add(value),
-        child: StreamBuilder<Event>(
-            stream: requestBloc.currentTarget,
-            builder: (context, snapshot) {
-              return Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                mainAxisSize: MainAxisSize.min,
-                children: <Widget>[
-                  Text((snapshot.data?.name ?? "")),
-                  Icon(Icons.arrow_drop_down,
-                    size: 24.0,
-                    color: downArrowColor,
-                  ),
-
-                ],
-              );
-            }
-        ),
+    final built = Scaffold(
+      appBar: AppBar(
+        title: Text("リクエスト"),
+        bottom: bottom,
       ),
+      body: body,
+      bottomNavigationBar: widget.bottomNavigationBar,
     );
+
+    // FIXME: dispose old controllers later...
+    scheduleMicrotask(() {
+      _oldTabControllers.forEach((controller) => controller.dispose());
+      _oldTabControllers.clear();
+    });
+
+    return built;
   }
 
-  Widget _buildBody(BuildContext context) {
-    final RequestPageBloc requestBloc = BlocProvider.of(context);
-    return StreamBuilder<Iterable<Request>>(
-      stream: requestBloc.requests,
-      builder: (buildContext, snapshot) {
-        if (snapshot.data == null) {
-          return Container();
-        } else if (snapshot.data.isEmpty) {
-          return Center(child: Text("リクエストがありません"));
-        } else {
-          final items = snapshot.data;
-          return ListView.separated(
-            itemCount: items.length,
-            separatorBuilder: (context, index) => Divider(),
-            itemBuilder: (context, index) {
-              final item = items.elementAt(index);
-              return ListTile(
-                key: ObjectKey(item.id),
-                title: Text(item.title),
-                subtitle: Text(item.conference),
-                trailing: item.isWatched ? Icon(Icons.check) : null,
-              );
-            },
-          );
-        }
-      },
+  Widget _buildTab(String eventId) {
+    return DefaultRequestTabBlocProvider(
+      eventId: eventId,
+      child: RequestTab(),
     );
   }
 }
