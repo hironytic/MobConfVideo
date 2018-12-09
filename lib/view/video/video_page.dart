@@ -146,6 +146,7 @@ class VideoPage extends StatelessWidget {
     final TextTheme textTheme = themeData.textTheme;
 
     return Card(
+      key: ObjectKey(item.session.id),
       child: InkWell(
         onTap: () => _onTapSession(index),
         child: Padding(
@@ -154,7 +155,24 @@ class VideoPage extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.stretch,
             mainAxisAlignment: MainAxisAlignment.start,
             children: <Widget>[
-              Text(item.session.title, style: textTheme.headline),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                mainAxisSize: MainAxisSize.max,
+                children: <Widget>[
+                  Text(
+                    item.conferenceName,
+                    style: textTheme.body1.copyWith(color: Colors.black54),
+                  ),
+                  Text(
+                    "${item.session.minutes} 分",
+                    style: textTheme.body1.copyWith(color: Colors.black54),
+                  ),
+                ],
+              ),
+              Padding(
+                padding: const EdgeInsets.only(top: 8.0),
+                child: Text(item.session.title, style: textTheme.headline),
+              ),
               DefaultTextStyle(
                 style: textTheme.body1.copyWith(color: Colors.black87),
                 softWrap: false,
@@ -167,15 +185,8 @@ class VideoPage extends StatelessWidget {
               ),
               Padding(
                 padding: const EdgeInsets.only(top: 8.0),
-                child: new Column(
+                child: Column(
                   children: _buildSpeakers(context, item.session),
-                ),
-              ),
-              Padding(
-                padding: const EdgeInsets.only(top: 8.0),
-                child: Text(
-                  item.conferenceName,
-                  style: textTheme.body1.copyWith(color: Colors.black54),
                 ),
               ),
             ],

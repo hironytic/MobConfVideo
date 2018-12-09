@@ -25,6 +25,7 @@
 
 import 'package:bloc_provider/bloc_provider.dart';
 import 'package:flutter/material.dart';
+import 'package:mob_conf_video/model/request.dart';
 import 'package:mob_conf_video/view/request/request_tab_bloc.dart';
 
 class RequestTab extends StatelessWidget {
@@ -46,40 +47,6 @@ class RequestTab extends StatelessWidget {
         }
       },
     );
-  }
-
-  Widget _buildLoadingBody(BuildContext context) {
-    return Center(
-      child: CircularProgressIndicator(),
-    );
-  }
-
-  Widget _buildLoadedBody(BuildContext context, RequestListLoaded state) {
-    final ThemeData themeData = Theme.of(context);
-    final TextTheme textTheme = themeData.textTheme;
-
-    if (state.requests.isEmpty) {
-      return Center(
-          child: Text(
-        "リクエストがありません",
-        style: textTheme.body1.copyWith(color: Colors.black54),
-      ));
-    } else {
-      final items = state.requests;
-      return ListView.separated(
-        itemCount: items.length,
-        separatorBuilder: (context, index) => Divider(),
-        itemBuilder: (context, index) {
-          final item = items.elementAt(index);
-          return ListTile(
-            key: ObjectKey(item.id),
-            title: Text(item.title),
-            subtitle: Text(item.conference),
-            trailing: item.isWatched ? Icon(Icons.check) : null,
-          );
-        },
-      );
-    }
   }
 
   Widget _buildErrorBody(BuildContext context, RequestListError state) {
@@ -104,4 +71,84 @@ class RequestTab extends StatelessWidget {
       ),
     );
   }
+
+  Widget _buildLoadingBody(BuildContext context) {
+    return Center(
+      child: CircularProgressIndicator(),
+    );
+  }
+
+  Widget _buildLoadedBody(BuildContext context, RequestListLoaded state) {
+    final ThemeData themeData = Theme.of(context);
+    final TextTheme textTheme = themeData.textTheme;
+
+    if (state.requests.isEmpty) {
+      return Center(
+          child: Text(
+        "リクエストがありません",
+        style: textTheme.body1.copyWith(color: Colors.black54),
+      ));
+    } else {
+      final requests = state.requests;
+      return ListView.builder(
+        itemCount: requests.length,
+        itemBuilder: (context, index) {
+          return _buildRequestItem(
+            context,
+            requests.elementAt(index),
+            index,
+          );
+        },
+      );
+    }
+  }
+
+  Widget _buildRequestItem(BuildContext context, Request request, int index) {
+    final ThemeData themeData = Theme.of(context);
+    final TextTheme textTheme = themeData.textTheme;
+    final IconThemeData iconThemeData = themeData.iconTheme;
+    final iconSize = iconThemeData.size ?? 24.0;
+
+    return Card(
+      key: ObjectKey(request.id),
+      child: InkWell(
+        onTap: () => _onTapRequest(index),
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            mainAxisAlignment: MainAxisAlignment.start,
+            children: <Widget>[
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                mainAxisSize: MainAxisSize.max,
+                children: <Widget>[
+                  Text(
+                    request.conference,
+                    style: textTheme.body1.copyWith(color: Colors.black54),
+                  ),
+                  request.isWatched
+                      ? Icon(
+                          Icons.check,
+                          color: Colors.green,
+                          size: iconSize,
+                        )
+                      : Container(
+                          width: iconSize,
+                          height: iconSize,
+                        ),
+                ],
+              ),
+              Padding(
+                padding: const EdgeInsets.only(top: 4.0),
+                child: Text(request.title, style: textTheme.subhead),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  void _onTapRequest(int index) {}
 }
