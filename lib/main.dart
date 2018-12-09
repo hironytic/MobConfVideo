@@ -61,7 +61,7 @@ class MyApp extends StatelessWidget {
           child: MaterialApp(
             title: 'MobConfVideo',
             theme: ThemeData(
-              primarySwatch: Colors.blue,
+              primarySwatch: Colors.indigo,
             ),
             home: MyHomePage(),
           ),
@@ -90,11 +90,18 @@ class _MyHomePageState extends State<MyHomePage> {
   Widget _buildBottomNavigationBar() {
     return BottomNavigationBar(
       items: <BottomNavigationBarItem>[
-        BottomNavigationBarItem(icon: Icon(Icons.list), title: Text("リクエスト")),
         BottomNavigationBarItem(
-            icon: Icon(Icons.video_label), title: Text("動画")),
+          icon: Icon(Icons.list),
+          title: Text("リクエスト"),
+        ),
         BottomNavigationBarItem(
-            icon: Icon(Icons.favorite), title: Text("お気に入り")),
+          icon: Icon(Icons.video_label),
+          title: Text("動画"),
+        ),
+//        BottomNavigationBarItem(
+//          icon: Icon(Icons.favorite),
+//          title: Text("お気に入り"),
+//        ),
       ],
       currentIndex: _currentPageIndex,
       onTap: _onBottomNavigationItemTapped,
