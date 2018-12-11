@@ -25,6 +25,7 @@
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:mob_conf_video/RepositoryProvider.dart';
 import 'package:mob_conf_video/repository/conference_repository.dart';
 import 'package:mob_conf_video/repository/event_repository.dart';
@@ -60,6 +61,13 @@ class MyApp extends StatelessWidget {
         child: DefaultVideoPageBlocProvider(
           child: MaterialApp(
             title: 'MobConfVideo',
+            supportedLocales: [
+              const Locale('ja', 'JP'),
+            ],
+            localizationsDelegates: [
+              GlobalMaterialLocalizations.delegate,
+              GlobalWidgetsLocalizations.delegate,
+            ],
             theme: ThemeData(
               primarySwatch: Colors.indigo,
             ),
